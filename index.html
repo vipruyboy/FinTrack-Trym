@@ -324,8 +324,11 @@
                         <p class="text-xs text-slate-500 mt-0.5">Tích tiểu thành đại mỗi ngày • Tự cộng dồn qua các tháng & trừ đúng số tiền khi rút</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="openJarHistoryModal('jar_drip_daily')" class="px-3 py-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-700 border border-slate-200 text-xs font-bold transition flex items-center gap-1">
+                            <span>📋</span><span>Lịch sử nạp/rút</span>
+                        </button>
                         <button type="button" onclick="openDripCheckinModal()" class="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition flex items-center gap-1.5">
-                            <span>✅</span><span>Điểm danh nộp quỹ</span>
+                            <span>✅</span><span>Điểm danh hôm nay</span>
                         </button>
                         <button type="button" onclick="openDripWithdrawModal()" class="px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition">
                             Rút / Chuyển sang Hũ
@@ -348,7 +351,7 @@
                     <div class="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-2xs">
                         <div class="text-[11px] font-semibold text-slate-500">Chuỗi kỷ luật liên tiếp</div>
                         <div id="drip-streak-count" class="text-xl sm:text-2xl font-heading font-extrabold text-amber-600 mt-1">0 ngày 🔥</div>
-                        <div class="text-[11px] text-slate-400 mt-1">Chạm vào ô ngày trên lịch để nộp / sửa</div>
+                        <div class="text-[11px] text-slate-400 mt-1">Chỉ điểm danh đúng ngày hôm nay (không điểm danh bù)</div>
                     </div>
                 </div>
 
@@ -1082,8 +1085,8 @@
                 </div>
                 <div class="grid grid-cols-2 gap-2.5">
                     <div>
-                        <label class="block text-xs font-semibold text-slate-500 mb-1">Ngày điểm danh</label>
-                        <input type="date" id="drip-checkin-date" required class="w-full px-3 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm font-semibold">
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Ngày điểm danh (Cố định hôm nay)</label>
+                        <input type="date" id="drip-checkin-date" readonly class="w-full px-3 py-2.5 rounded-xl border border-slate-200 bg-slate-100 text-slate-600 text-xs sm:text-sm font-semibold cursor-not-allowed">
                     </div>
                     <div>
                         <label class="block text-xs font-semibold text-slate-500 mb-1">Trừ từ Ví nguồn</label>
@@ -1710,7 +1713,8 @@
                 }
 
                 // Chuyển nội bộ từ Quỹ Nhỏ Giọt sang Hũ khác không làm thay đổi số dư các ví
-                if (tx.type === 'jar_withdraw' && tx.jarId === DRIP_JAR_ID && tx.toJarId) {
+                if ((tx.type === 'jar_withdraw' && tx.jarId === DRIP_JAR_ID && (tx.toJarId || String(tx.note || '').includes('Chuyển từ Quỹ Nhỏ Giọt sang'))) ||
+                    (tx.type === 'jar_deposit' && String(tx.note || '').includes('Chuyển từ Quỹ Nhỏ Giọt sang'))) {
                     return;
                 }
 
@@ -2118,19 +2122,19 @@
                 }
 
                 html += `
-                    <button type="button" onclick="openDripCheckinModal('${dateStr}')" class="min-h-[62px] sm:min-h-[70px] p-1 rounded-xl border ${cardCls} flex flex-col items-center justify-between transition cursor-pointer">
+                    <${isToday ? `button type="button" onclick="openDripCheckinModal()"` : 'div'} class="min-h-[62px] sm:min-h-[70px] p-1 rounded-xl border ${cardCls} flex flex-col items-center justify-between transition ${isToday ? 'cursor-pointer' : 'cursor-default select-none'}">
                         <span class="w-full text-left text-[10px] font-bold ${isToday ? 'text-amber-700' : 'text-slate-500'} px-0.5">${day}</span>
                         ${statusBadge}
                         <div class="h-3.5 flex items-center justify-center w-full overflow-hidden">${amtLabel}</div>
-                    </button>
+                    </${isToday ? 'button' : 'div'}>
                 `;
             }
             grid.innerHTML = html;
         }
 
-        function openDripCheckinModal(preselectDate = '') {
+        function openDripCheckinModal() {
             populateWalletSelects();
-            document.getElementById('drip-checkin-date').value = preselectDate || getTodayStr();
+            document.getElementById('drip-checkin-date').value = getTodayStr();
             document.getElementById('drip-checkin-amount').value = '50.000';
             document.getElementById('drip-checkin-note').value = '';
             document.getElementById('drip-checkin-modal').classList.remove('hidden');
@@ -2151,7 +2155,7 @@
                 showToast('Vui lòng nhập số tiền điểm danh lớn hơn 0!', 'error');
                 return;
             }
-            const dateVal = normalizeDateStr(document.getElementById('drip-checkin-date').value) || getTodayStr();
+            const dateVal = getTodayStr();
             const walletId = document.getElementById('drip-checkin-wallet').value;
             const wallet = getWalletById(walletId);
             const noteInput = document.getElementById('drip-checkin-note').value.trim();
@@ -2237,9 +2241,10 @@
                     return;
                 }
                 targetJar.current = (Number(targetJar.current) || 0) + amount;
+                const nowTs = Date.now();
 
-                const txObj = {
-                    id: `tx_drip_out_${Date.now()}`,
+                const txOut = {
+                    id: `tx_drip_out_${nowTs}`,
                     date: dateVal,
                     type: 'jar_withdraw',
                     jarId: DRIP_JAR_ID,
@@ -2248,12 +2253,22 @@
                     wallet: `Chuyển sang ${targetJar.name}`,
                     note: `Chuyển từ Quỹ Nhỏ Giọt sang ${targetJar.name}`
                 };
-                state.transactions.unshift(txObj);
+                const txIn = {
+                    id: `tx_jar_in_${nowTs + 1}`,
+                    date: dateVal,
+                    type: 'jar_deposit',
+                    jarId: targetJar.id,
+                    amount: amount,
+                    wallet: 'Quỹ Nhỏ Giọt',
+                    note: `Chuyển từ Quỹ Nhỏ Giọt sang ${targetJar.name}`
+                };
+                state.transactions.unshift(txIn, txOut);
                 saveState();
                 closeDripWithdrawModal();
                 refreshAllViews();
                 showToast(`Đã chuyển ${formatVND(amount)} từ Quỹ Nhỏ Giọt sang ${targetJar.name}!`);
-                syncToGoogleSheets('ADD_TRANSACTION', { transaction: txObj });
+                syncToGoogleSheets('ADD_TRANSACTION', { transaction: txOut });
+                syncToGoogleSheets('ADD_TRANSACTION', { transaction: txIn });
                 syncToGoogleSheets('SYNC_JARS', { jars: state.jars });
             } else {
                 const walletId = document.getElementById('drip-withdraw-wallet').value;
@@ -2291,7 +2306,10 @@
                     }
                     const tgt = Math.max(Number(jar.target) || 1, 1);
                     const pct = Math.min(Math.round((cur / tgt) * 100), 100);
-                    const jarTxCount = state.transactions.filter(t => (t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === jar.id).length;
+                    const jarTxCount = state.transactions.filter(t =>
+                        ((t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === jar.id) ||
+                        (t.type === 'jar_withdraw' && t.jarId === DRIP_JAR_ID && (t.toJarId === jar.id || String(t.note || '').trim() === `Chuyển từ Quỹ Nhỏ Giọt sang ${jar.name}`))
+                    ).length;
                     return `
                         <div class="p-5 rounded-2xl border border-slate-200/80 bg-slate-50/60 flex flex-col justify-between space-y-3">
                             <div class="flex items-start justify-between gap-2">
@@ -2485,18 +2503,30 @@
         }
 
         function openJarHistoryModal(jarId) {
-            const jar = state.jars.find(j => j.id === jarId);
+            const isDrip = jarId === DRIP_JAR_ID;
+            const dripStats = isDrip ? calculateDripFundStats(document.getElementById('month-filter').value) : null;
+            const jar = isDrip
+                ? { id: DRIP_JAR_ID, name: 'Quỹ Nhỏ Giọt — Điểm Danh Ngày', icon: '💧', target: 0, current: dripStats.balance }
+                : state.jars.find(j => j.id === jarId);
             if (!jar) return;
             const safeIcon = (jar.icon && !/^\d+$/.test(String(jar.icon).trim())) ? jar.icon : '🛡️';
-            const jarTxs = state.transactions.filter(t => (t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === jar.id)
-                .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+            const jarTxs = state.transactions.filter(t => {
+                if (isDrip) {
+                    return (t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === DRIP_JAR_ID;
+                }
+                const directMatch = (t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === jar.id;
+                const incomingFromDrip = t.type === 'jar_withdraw' && t.jarId === DRIP_JAR_ID && (
+                    t.toJarId === jar.id || (t.note && String(t.note).includes(jar.name))
+                );
+                return directMatch || incomingFromDrip;
+            }).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-            const totalIn = jarTxs.filter(t => t.type === 'jar_deposit').reduce((s, t) => s + (Number(t.amount) || 0), 0);
-            const totalOut = jarTxs.filter(t => t.type === 'jar_withdraw').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+            const totalIn = jarTxs.filter(t => t.type === 'jar_deposit' || (t.type === 'jar_withdraw' && t.jarId === DRIP_JAR_ID && !isDrip)).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+            const totalOut = jarTxs.filter(t => t.type === 'jar_withdraw' && (isDrip || t.jarId === jar.id)).reduce((s, t) => s + (Number(t.amount) || 0), 0);
 
             document.getElementById('jar-hist-icon').textContent = safeIcon;
             document.getElementById('jar-hist-title').textContent = jar.name;
-            document.getElementById('jar-hist-target').textContent = `Mục tiêu: ${formatVND(jar.target)}`;
+            document.getElementById('jar-hist-target').textContent = isDrip ? 'Tích tiểu thành đại mỗi ngày' : `Mục tiêu: ${formatVND(jar.target)}`;
             document.getElementById('jar-hist-in').textContent = `+${formatVND(totalIn)}`;
             document.getElementById('jar-hist-out').textContent = `-${formatVND(totalOut)}`;
             document.getElementById('jar-hist-cur').textContent = formatVND(jar.current);
@@ -2506,8 +2536,11 @@
                 listEl.innerHTML = `<div class="py-10 text-center text-xs text-slate-400">Chưa có lịch sử nộp tiền hoặc rút tiền nào cho quỹ này.</div>`;
             } else {
                 listEl.innerHTML = jarTxs.map(tx => {
-                    const isDep = tx.type === 'jar_deposit';
-                    const wName = getWalletById(resolveWalletIdForTx(tx)).name;
+                    const isIncomingTransferFromDrip = !isDrip && tx.type === 'jar_withdraw' && tx.jarId === DRIP_JAR_ID;
+                    const isDep = tx.type === 'jar_deposit' || isIncomingTransferFromDrip;
+                    const sourceLabel = isIncomingTransferFromDrip
+                        ? 'Từ Quỹ Nhỏ Giọt 💧'
+                        : `${isDep ? 'Từ ví:' : 'Về ví:'} ${tx.wallet || getWalletById(resolveWalletIdForTx(tx)).name}`;
                     return `
                         <div onclick="closeJarHistoryModal(); openDetailModal('${tx.id}')" class="p-3 rounded-2xl border border-slate-100 bg-slate-50/70 hover:bg-slate-100 flex items-center justify-between gap-3 cursor-pointer transition">
                             <div class="min-w-0">
@@ -2515,7 +2548,7 @@
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isDep ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${isDep ? 'Nộp vào quỹ' : 'Rút từ quỹ'}</span>
                                     <span class="text-xs font-bold text-slate-800">${formatDateVN(tx.date, true)}</span>
                                 </div>
-                                <div class="text-[11px] text-slate-500 truncate mt-1">${isDep ? 'Từ ví:' : 'Về ví:'} ${wName}${tx.note ? ' • ' + tx.note : ''}</div>
+                                <div class="text-[11px] text-slate-500 truncate mt-1">${sourceLabel}${tx.note ? ' • ' + tx.note : ''}</div>
                             </div>
                             <div class="font-heading font-extrabold text-xs sm:text-sm ${isDep ? 'text-emerald-600' : 'text-rose-600'} shrink-0">
                                 ${isDep ? '+' : '-'}${formatVND(tx.amount)}
@@ -2527,11 +2560,13 @@
 
             document.getElementById('jar-hist-deposit-btn').onclick = () => {
                 closeJarHistoryModal();
-                openJarTransferModal('deposit', jar.id);
+                if (isDrip) openDripCheckinModal();
+                else openJarTransferModal('deposit', jar.id);
             };
             document.getElementById('jar-hist-withdraw-btn').onclick = () => {
                 closeJarHistoryModal();
-                openJarTransferModal('withdraw', jar.id);
+                if (isDrip) openDripWithdrawModal();
+                else openJarTransferModal('withdraw', jar.id);
             };
 
             document.getElementById('jar-history-modal').classList.remove('hidden');
@@ -2966,21 +3001,46 @@
             const idx = state.transactions.findIndex(t => t.id === txId);
             if (idx === -1) return;
             const tx = state.transactions[idx];
+            let jarsChanged = false;
 
             if (tx.type === 'jar_deposit' || tx.type === 'jar_withdraw') {
                 const jar = state.jars.find(j => j.id === tx.jarId);
                 if (jar) {
                     jar.current = Math.max(0, (Number(jar.current) || 0) + (tx.type === 'jar_deposit' ? -Number(tx.amount) : Number(tx.amount)));
+                    jarsChanged = true;
+                }
+                if (tx.type === 'jar_withdraw' && tx.jarId === DRIP_JAR_ID) {
+                    const targetJar = state.jars.find(j =>
+                        (tx.toJarId && j.id === tx.toJarId) ||
+                        (tx.note && String(tx.note).includes(`Chuyển từ Quỹ Nhỏ Giọt sang ${j.name}`))
+                    );
+                    if (targetJar) {
+                        targetJar.current = Math.max(0, (Number(targetJar.current) || 0) - Number(tx.amount));
+                        jarsChanged = true;
+                        const pairedIdx = state.transactions.findIndex(other =>
+                            other.id !== tx.id &&
+                            other.type === 'jar_deposit' &&
+                            other.jarId === targetJar.id &&
+                            Number(other.amount) === Number(tx.amount) &&
+                            normalizeDateStr(other.date) === normalizeDateStr(tx.date)
+                        );
+                        if (pairedIdx !== -1) {
+                            const pairedId = state.transactions[pairedIdx].id;
+                            state.transactions.splice(pairedIdx, 1);
+                            syncToGoogleSheets('DELETE_TRANSACTION', { id: pairedId });
+                        }
+                    }
                 }
             }
 
-            state.transactions.splice(idx, 1);
+            const newIdx = state.transactions.findIndex(t => t.id === txId);
+            if (newIdx !== -1) state.transactions.splice(newIdx, 1);
             saveState();
             closeDetailModal();
             refreshAllViews();
-            showToast('Đã xóa giao dịch!');
+            showToast('Đã xóa giao dịch & đồng bộ số dư quỹ!');
             syncToGoogleSheets('DELETE_TRANSACTION', { id: txId });
-            if (tx.type === 'jar_deposit' || tx.type === 'jar_withdraw') {
+            if (jarsChanged) {
                 syncToGoogleSheets('SYNC_JARS', { jars: state.jars });
             }
         }
