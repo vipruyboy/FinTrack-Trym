@@ -321,9 +321,12 @@
                             <span class="text-xl">💧</span>
                             <h3 class="font-heading font-bold text-lg text-slate-900">Quỹ Nhỏ Giọt — Điểm Danh Tiết Kiệm Ngày</h3>
                         </div>
-                        <p class="text-xs text-slate-500 mt-0.5">Tích tiểu thành đại mỗi ngày • Tự cộng dồn qua các tháng & trừ đúng số tiền khi rút</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Tích tiểu thành đại mỗi ngày • Kèm VietQR động & mở nhanh App Ngân hàng</p>
                     </div>
                     <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" onclick="openDripBankConfigModal()" class="px-3 py-2 rounded-xl bg-white hover:bg-emerald-50 text-emerald-700 border border-emerald-200 text-xs font-bold transition flex items-center gap-1" title="Cài đặt tài khoản ngân hàng nhận quỹ">
+                            <span>🏦</span><span>TK nhận quỹ</span>
+                        </button>
                         <button type="button" onclick="openJarHistoryModal('jar_drip_daily')" class="px-3 py-2 rounded-xl bg-white hover:bg-indigo-50 text-indigo-700 border border-slate-200 text-xs font-bold transition flex items-center gap-1">
                             <span>📋</span><span>Lịch sử nạp/rút</span>
                         </button>
@@ -1097,7 +1100,138 @@
                     <label class="block text-xs font-semibold text-slate-500 mb-1">Ghi chú (tùy chọn)</label>
                     <input type="text" id="drip-checkin-note" placeholder="VD: Nhịn ly trà sữa tích quỹ..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm">
                 </div>
-                <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition">✅ Xác nhận Điểm danh & Đồng bộ</button>
+                <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition">✅ Xác nhận Điểm danh & Tạo mã QR chuyển khoản</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 14: MÃ VIETQR ĐỘNG & CHUYỂN NHANH APP NGÂN HÀNG ==================== -->
+    <div id="drip-qr-modal" class="fixed inset-0 z-[70] hidden bg-slate-900/70 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div>
+                    <h3 class="font-heading font-bold text-lg text-slate-900">📲 Chuyển Khoản Vào Quỹ Nhỏ Giọt</h3>
+                    <p class="text-[11px] text-emerald-700 font-semibold">Đã ghi sổ điểm danh! Quét QR hoặc mở App Ngân hàng</p>
+                </div>
+                <button type="button" onclick="closeDripQrModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
+            </div>
+
+            <div id="drip-qr-configured-view" class="space-y-3.5">
+                <div class="p-3.5 rounded-2xl bg-slate-50 border border-slate-200/80 flex flex-col items-center text-center">
+                    <div class="bg-white p-2.5 rounded-2xl shadow-xs border border-slate-100">
+                        <img id="drip-vietqr-img" src="" alt="Mã QR chuyển khoản" class="w-56 h-56 object-contain rounded-xl" onerror="this.src='https://placehold.co/220x220/ecfdf5/059669?text=QR+Nhan+Quy'">
+                    </div>
+                    <div class="mt-2.5 text-lg font-heading font-extrabold text-emerald-600" id="drip-qr-amount-label">50.000 ₫</div>
+                    <div class="text-xs font-bold text-slate-800 mt-0.5" id="drip-qr-bank-label">ZaloPay Sinh Lời Tự Động</div>
+                    <div class="text-[11px] text-slate-500" id="drip-qr-name-label"></div>
+                    <div class="mt-1.5 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 text-[11px] font-semibold" id="drip-qr-memo-label">Nội dung: Quy nho giot</div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2.5">
+                    <button type="button" id="drip-qr-secondary-btn" onclick="copyDripAccountNumber()" class="py-2.5 px-3 rounded-2xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition flex items-center justify-center gap-1.5">
+                        <span>📋</span><span id="drip-qr-secondary-text">Copy Số TK</span>
+                    </button>
+                    <button type="button" onclick="openConfiguredBankApp()" class="py-2.5 px-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center justify-center gap-1.5">
+                        <span>🚀</span><span id="drip-qr-primary-text">Mở App Ngân hàng</span>
+                    </button>
+                </div>
+
+                <button type="button" onclick="closeDripQrModal(); openDripBankConfigModal()" class="w-full py-2 text-center text-[11px] font-bold text-indigo-600 hover:underline">
+                    ✎ Đổi ảnh QR / tài khoản nhận quỹ
+                </button>
+            </div>
+
+            <div id="drip-qr-unconfigured-view" class="hidden py-6 text-center space-y-3">
+                <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl mx-auto">🏦</div>
+                <div class="text-sm font-bold text-slate-900">Chưa cài đặt QR / Tài khoản nhận quỹ</div>
+                <p class="text-xs text-slate-500 px-3">Tải lên ảnh mã QR ZaloPay có sẵn của bạn hoặc nhập số tài khoản ngân hàng 1 lần để tự động bật QR mỗi lần điểm danh.</p>
+                <button type="button" onclick="closeDripQrModal(); openDripBankConfigModal()" class="px-5 py-2.5 rounded-2xl bg-emerald-600 text-white text-xs font-bold">
+                    + Cài đặt QR nhận quỹ ngay
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL 15: CÀI ĐẶT TÀI KHOẢN / ẢNH QR QUỸ NHỎ GIỌT ==================== -->
+    <div id="drip-bank-config-modal" class="fixed inset-0 z-[75] hidden bg-slate-900/60 backdrop-blur-xs flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl p-5 sm:p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div class="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 class="font-heading font-bold text-lg text-slate-900">🏦 QR / TK nhận Quỹ Nhỏ Giọt</h3>
+                <button type="button" onclick="closeDripBankConfigModal()" class="w-8 h-8 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center font-bold">✕</button>
+            </div>
+
+            <!-- Chọn chế độ: Ảnh QR có sẵn (ZaloPay...) hoặc VietQR động -->
+            <div class="grid grid-cols-2 gap-1.5 bg-slate-100 p-1 rounded-2xl">
+                <button type="button" id="drip-cfg-mode-custom" onclick="switchDripBankConfigMode('custom_qr')" class="py-2 rounded-xl text-xs font-bold transition bg-white text-emerald-700 shadow-2xs">🖼️ Ảnh QR có sẵn (ZaloPay)</button>
+                <button type="button" id="drip-cfg-mode-vietqr" onclick="switchDripBankConfigMode('vietqr')" class="py-2 rounded-xl text-xs font-bold transition text-slate-600">🏧 VietQR Ngân hàng</button>
+            </div>
+
+            <form onsubmit="saveDripBankConfig(event)" class="space-y-3.5">
+                <input type="hidden" id="drip-cfg-mode-val" value="custom_qr">
+
+                <!-- Chế độ 1: Tải ảnh QR có sẵn -->
+                <div id="drip-cfg-custom-section" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Tên ví / ngân hàng nhận (Hiển thị nhắc nhở)</label>
+                        <input type="text" id="drip-custom-qr-label" placeholder="VD: ZaloPay Sinh Lời Tự Động" value="ZaloPay Sinh Lời Tự Động" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Chọn ảnh mã QR từ máy của bạn</label>
+                        <label class="flex flex-col items-center justify-center p-4 rounded-2xl border-2 border-dashed border-emerald-300 bg-emerald-50/40 hover:bg-emerald-50 cursor-pointer transition text-center">
+                            <img id="drip-custom-qr-preview" src="" alt="" class="hidden w-36 h-36 object-contain rounded-xl mb-2 bg-white p-1 border border-slate-200">
+                            <span class="text-xs font-bold text-emerald-700">📷 Bấm để tải ảnh mã QR ZaloPay lên</span>
+                            <span class="text-[10px] text-slate-500 mt-0.5">Tự động nén gọn & đồng bộ qua Google Sheets</span>
+                            <input type="file" accept="image/*" onchange="handleDripQrImageUpload(event)" class="hidden">
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Chế độ 2: VietQR theo số tài khoản -->
+                <div id="drip-cfg-vietqr-section" class="hidden space-y-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Chọn Ngân hàng nhận tiết kiệm</label>
+                        <select id="drip-bank-bin" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm bg-white font-semibold">
+                            <option value="546034|Cake by VPBank|cake://">Cake by VPBank</option>
+                            <option value="970436|Vietcombank|vietcombank://">Vietcombank</option>
+                            <option value="970407|Techcombank|techcombank://">Techcombank</option>
+                            <option value="970422|MB Bank|mbbank://">MB Bank</option>
+                            <option value="970418|BIDV|bidvsmartbanking://">BIDV</option>
+                            <option value="970415|VietinBank|vietinbankipay://">VietinBank</option>
+                            <option value="970432|VPBank|vpbankneo://">VPBank NEO</option>
+                            <option value="970423|TPBank|tpbank://">TPBank</option>
+                            <option value="970416|ACB|acbapp://">ACB</option>
+                            <option value="963388|Timo Digital Bank|timo://">Timo Digital Bank</option>
+                            <option value="970403|Sacombank|sacombank://">Sacombank</option>
+                            <option value="970441|VIB|myvib://">VIB</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Số tài khoản nhận tiền</label>
+                        <input type="text" id="drip-bank-account" placeholder="Nhập số tài khoản..." class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-500 mb-1">Tên chủ tài khoản (Không dấu)</label>
+                        <input type="text" id="drip-bank-owner" placeholder="VD: NGUYEN VAN A" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-sm font-bold uppercase">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-500 mb-1">App muốn mở nhanh để quét chuyển khoản</label>
+                    <select id="drip-sender-app-scheme" class="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm bg-white font-semibold">
+                        <option value="zalopay://">Mở ví ZaloPay</option>
+                        <option value="techcombank://">Mở Techcombank Mobile</option>
+                        <option value="vietcombank://">Mở VCB Digibank</option>
+                        <option value="mbbank://">Mở MB Bank</option>
+                        <option value="bidvsmartbanking://">Mở BIDV SmartBanking</option>
+                        <option value="vietinbankipay://">Mở VietinBank iPay</option>
+                        <option value="vpbankneo://">Mở VPBank NEO</option>
+                        <option value="tpbank://">Mở TPBank</option>
+                        <option value="acbapp://">Mở ACB ONE</option>
+                        <option value="cake://">Mở Cake by VPBank</option>
+                    </select>
+                </div>
+
+                <button type="submit" class="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm transition">Lưu Cấu hình QR & Đồng bộ Sheet</button>
             </form>
         </div>
     </div>
@@ -1152,6 +1286,30 @@
         const PIN_LEN_HINT_KEY = 'fintrack_pin_len_hint';
         const DEFAULT_WEBHOOK_URL = 'https://script.google.com/macros/s/AKfycbwBPn1NEoSsZI1h7sdxU7PmKpYRpJwijzh1qLz-XyPJI4Sa1CsAY6_YZSvBRZosWiD6/exec';
         const DRIP_JAR_ID = 'jar_drip_daily';
+        const IMPULSE_NOTE_TAG = '[⚡ Bốc đồng]';
+
+        function encodeNoteWithQuality(cleanNote, quality) {
+            const base = stripQualityTagFromNote(cleanNote);
+            if (quality === 'impulse') {
+                return base ? `${base} ${IMPULSE_NOTE_TAG}` : IMPULSE_NOTE_TAG;
+            }
+            return base;
+        }
+
+        function stripQualityTagFromNote(rawNote) {
+            return String(rawNote || '')
+                .replace(/\[⚡\s*Bốc đồng\]/gi, '')
+                .replace(/\[Bốc đồng\]/gi, '')
+                .trim();
+        }
+
+        function extractQualityFromNote(rawNote, existingQuality = '') {
+            const str = String(rawNote || '');
+            if (/\[⚡\s*Bốc đồng\]/i.test(str) || /\[Bốc đồng\]/i.test(str) || existingQuality === 'impulse') {
+                return 'impulse';
+            }
+            return 'worth';
+        }
 
         const PRESET_ICONS = [
             '🍜', '🍩', '🥩', '☕', '🧋', '🍺', '🥗', '🍎',
@@ -1195,7 +1353,18 @@
             },
             sheetRows: [],
             monthlyJournals: {},
-            hourlyWage: 0,
+            hourlyWage: 100000,
+            dripBankConfig: {
+                mode: 'custom_qr',
+                customQrLabel: 'ZaloPay Sinh Lời Tự Động',
+                customQrDataUrl: '',
+                senderScheme: 'zalopay://',
+                bin: '546034',
+                bankName: 'Cake by VPBank',
+                scheme: 'cake://',
+                accountNo: '',
+                accountName: ''
+            },
             currentTxType: 'expense',
             currentTxQuality: 'worth',
             selectedCategoryId: 'cat_food',
@@ -1210,98 +1379,35 @@
         let currentDebtTab = 'lend';
         let activeIconTargetInputId = '';
 
-        // ==================== TẠO ICON PNG 3D XANH NGỌC CHO IOS & PWA ====================
+        // ==================== TẠO ICON APP ĐỘNG CHO IPHONE & PWA ====================
         function generateAndApplyAppIcons() {
             try {
                 function drawIconCanvas(size) {
-                    const canvas = document.createElement('canvas');
-                    canvas.width = size;
-                    canvas.height = size;
-                    const ctx = canvas.getContext('2d');
-                    const s = size / 180;
-
-                    const bgGrad = ctx.createLinearGradient(0, 0, size, size);
-                    bgGrad.addColorStop(0, '#10B981');
-                    bgGrad.addColorStop(0.5, '#059669');
-                    bgGrad.addColorStop(1, '#064E3B');
-                    ctx.fillStyle = bgGrad;
+                    const c = document.createElement('canvas');
+                    c.width = size;
+                    c.height = size;
+                    const ctx = c.getContext('2d');
+                    const grad = ctx.createLinearGradient(0, 0, size, size);
+                    grad.addColorStop(0, '#10B981');
+                    grad.addColorStop(1, '#065F46');
+                    ctx.fillStyle = grad;
                     ctx.fillRect(0, 0, size, size);
 
-                    const glow = ctx.createRadialGradient(size * 0.25, size * 0.2, 5 * s, size * 0.35, size * 0.3, size * 0.75);
-                    glow.addColorStop(0, 'rgba(255,255,255,0.22)');
-                    glow.addColorStop(1, 'rgba(255,255,255,0)');
-                    ctx.fillStyle = glow;
-                    ctx.fillRect(0, 0, size, size);
-
-                    const goldGrad = ctx.createLinearGradient(45 * s, 30 * s, 135 * s, 145 * s);
-                    goldGrad.addColorStop(0, '#FDE68A');
-                    goldGrad.addColorStop(0.5, '#F59E0B');
-                    goldGrad.addColorStop(1, '#B45309');
-
-                    ctx.save();
-                    ctx.shadowColor = 'rgba(0,0,0,0.28)';
-                    ctx.shadowBlur = 10 * s;
-                    ctx.shadowOffsetY = 5 * s;
-
+                    ctx.fillStyle = 'rgba(255,255,255,0.14)';
                     ctx.beginPath();
-                    ctx.moveTo(90 * s, 30 * s);
-                    ctx.lineTo(138 * s, 48 * s);
-                    ctx.lineTo(138 * s, 92 * s);
-                    ctx.quadraticCurveTo(138 * s, 132 * s, 90 * s, 152 * s);
-                    ctx.quadraticCurveTo(42 * s, 132 * s, 42 * s, 92 * s);
-                    ctx.lineTo(42 * s, 48 * s);
-                    ctx.closePath();
-                    ctx.lineWidth = 6 * s;
-                    ctx.strokeStyle = goldGrad;
-                    ctx.fillStyle = 'rgba(6, 78, 59, 0.45)';
-                    ctx.fill();
-                    ctx.stroke();
-
-                    ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
-                    ctx.fillRect(62 * s, 98 * s, 11 * s, 26 * s);
-                    ctx.fillRect(81 * s, 84 * s, 11 * s, 40 * s);
-                    ctx.fillRect(100 * s, 68 * s, 11 * s, 56 * s);
-
-                    ctx.beginPath();
-                    ctx.moveTo(56 * s, 102 * s);
-                    ctx.lineTo(78 * s, 82 * s);
-                    ctx.lineTo(93 * s, 92 * s);
-                    ctx.lineTo(124 * s, 58 * s);
-                    ctx.lineWidth = 6.5 * s;
-                    ctx.lineCap = 'round';
-                    ctx.lineJoin = 'round';
-                    ctx.strokeStyle = '#FDE047';
-                    ctx.stroke();
-
-                    ctx.beginPath();
-                    ctx.moveTo(126 * s, 56 * s);
-                    ctx.lineTo(111 * s, 58 * s);
-                    ctx.lineTo(123 * s, 71 * s);
-                    ctx.closePath();
-                    ctx.fillStyle = '#FDE047';
+                    ctx.arc(size * 0.82, size * 0.2, size * 0.28, 0, Math.PI * 2);
                     ctx.fill();
 
-                    ctx.beginPath();
-                    ctx.arc(122 * s, 124 * s, 22 * s, 0, Math.PI * 2);
-                    ctx.fillStyle = goldGrad;
-                    ctx.fill();
-                    ctx.lineWidth = 2.5 * s;
-                    ctx.strokeStyle = '#FEF3C7';
-                    ctx.stroke();
-
-                    ctx.fillStyle = '#064E3B';
-                    ctx.font = '800 ' + Math.round(24 * s) + 'px "Plus Jakarta Sans", sans-serif';
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.font = `800 ${Math.round(size * 0.48)}px sans-serif`;
                     ctx.textAlign = 'center';
                     ctx.textBaseline = 'middle';
-                    ctx.fillText('đ', 122 * s, 125 * s);
-                    ctx.restore();
-
-                    return canvas.toDataURL('image/png');
+                    ctx.fillText('₫', size * 0.5, size * 0.53);
+                    return c.toDataURL('image/png');
                 }
 
                 const png180 = drawIconCanvas(180);
                 const png512 = drawIconCanvas(512);
-
                 const appleLink = document.getElementById('dynamic-apple-icon');
                 const favLink = document.getElementById('dynamic-favicon');
                 if (appleLink) appleLink.href = png180;
@@ -1310,9 +1416,9 @@
                 const manifestObj = {
                     name: 'FinTrack — Sổ Thu Chi & Tích Sản',
                     short_name: 'FinTrack',
-                    start_url: window.location.href.split('#')[0],
+                    start_url: '.',
                     display: 'standalone',
-                    background_color: '#064E3B',
+                    background_color: '#0F172A',
                     theme_color: '#059669',
                     icons: [
                         { src: png180, sizes: '180x180', type: 'image/png' },
@@ -1325,6 +1431,208 @@
             } catch (e) {
                 console.warn('Không thể khởi tạo icon động:', e);
             }
+        }
+
+        // ==================== VIETQR ĐỘNG / ẢNH QR CÓ SẴN & MỞ APP NGÂN HÀNG ====================
+        let pendingCustomQrDataUrl = '';
+
+        function switchDripBankConfigMode(mode) {
+            document.getElementById('drip-cfg-mode-val').value = mode;
+            const customBtn = document.getElementById('drip-cfg-mode-custom');
+            const vietqrBtn = document.getElementById('drip-cfg-mode-vietqr');
+            customBtn.className = `py-2 rounded-xl text-xs font-bold transition ${mode === 'custom_qr' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-600'}`;
+            vietqrBtn.className = `py-2 rounded-xl text-xs font-bold transition ${mode === 'vietqr' ? 'bg-white text-emerald-700 shadow-2xs' : 'text-slate-600'}`;
+            document.getElementById('drip-cfg-custom-section').classList.toggle('hidden', mode !== 'custom_qr');
+            document.getElementById('drip-cfg-vietqr-section').classList.toggle('hidden', mode !== 'vietqr');
+        }
+
+        function handleDripQrImageUpload(event) {
+            const file = event.target.files?.[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = new Image();
+                img.onload = () => {
+                    const maxDim = 420;
+                    let w = img.width;
+                    let h = img.height;
+                    if (w > maxDim || h > maxDim) {
+                        if (w > h) {
+                            h = Math.round((h * maxDim) / w);
+                            w = maxDim;
+                        } else {
+                            w = Math.round((w * maxDim) / h);
+                            h = maxDim;
+                        }
+                    }
+                    const canvas = document.createElement('canvas');
+                    canvas.width = w;
+                    canvas.height = h;
+                    const ctx = canvas.getContext('2d');
+                    ctx.fillStyle = '#FFFFFF';
+                    ctx.fillRect(0, 0, w, h);
+                    ctx.drawImage(img, 0, 0, w, h);
+                    pendingCustomQrDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+                    const prev = document.getElementById('drip-custom-qr-preview');
+                    prev.src = pendingCustomQrDataUrl;
+                    prev.classList.remove('hidden');
+                    showToast('Đã tải ảnh mã QR! Bấm "Lưu Cấu hình QR" để hoàn tất.');
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function openDripBankConfigModal() {
+            const cfg = state.dripBankConfig || {};
+            const mode = cfg.mode || (cfg.customQrDataUrl ? 'custom_qr' : (cfg.accountNo ? 'vietqr' : 'custom_qr'));
+            switchDripBankConfigMode(mode);
+
+            document.getElementById('drip-custom-qr-label').value = cfg.customQrLabel || 'ZaloPay Sinh Lời Tự Động';
+            pendingCustomQrDataUrl = cfg.customQrDataUrl || '';
+            const prev = document.getElementById('drip-custom-qr-preview');
+            if (pendingCustomQrDataUrl) {
+                prev.src = pendingCustomQrDataUrl;
+                prev.classList.remove('hidden');
+            } else {
+                prev.src = '';
+                prev.classList.add('hidden');
+            }
+
+            const sel = document.getElementById('drip-bank-bin');
+            if (sel && cfg.bin) {
+                for (let i = 0; i < sel.options.length; i++) {
+                    if (sel.options[i].value.startsWith(cfg.bin + '|')) {
+                        sel.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+            document.getElementById('drip-bank-account').value = cfg.accountNo || '';
+            document.getElementById('drip-bank-owner').value = cfg.accountName || '';
+
+            const senderSel = document.getElementById('drip-sender-app-scheme');
+            if (senderSel && cfg.senderScheme) {
+                senderSel.value = cfg.senderScheme;
+            }
+            document.getElementById('drip-bank-config-modal').classList.remove('hidden');
+        }
+
+        function closeDripBankConfigModal() {
+            document.getElementById('drip-bank-config-modal').classList.add('hidden');
+        }
+
+        function saveDripBankConfig(e) {
+            e.preventDefault();
+            const mode = document.getElementById('drip-cfg-mode-val').value || 'custom_qr';
+            const senderScheme = document.getElementById('drip-sender-app-scheme').value || 'zalopay://';
+
+            if (mode === 'custom_qr') {
+                const customQrLabel = document.getElementById('drip-custom-qr-label').value.trim() || 'ZaloPay Sinh Lời Tự Động';
+                if (!pendingCustomQrDataUrl) {
+                    showToast('Vui lòng chọn tải lên ảnh mã QR của bạn!', 'error');
+                    return;
+                }
+                state.dripBankConfig = {
+                    ...state.dripBankConfig,
+                    mode: 'custom_qr',
+                    customQrLabel,
+                    customQrDataUrl: pendingCustomQrDataUrl,
+                    senderScheme
+                };
+            } else {
+                const rawSel = document.getElementById('drip-bank-bin').value;
+                const [bin, bankName, scheme] = rawSel.split('|');
+                const accountNo = document.getElementById('drip-bank-account').value.trim().replace(/\s+/g, '');
+                const accountName = document.getElementById('drip-bank-owner').value.trim().toUpperCase();
+                if (!accountNo) {
+                    showToast('Vui lòng nhập số tài khoản nhận tiền!', 'error');
+                    return;
+                }
+                state.dripBankConfig = {
+                    ...state.dripBankConfig,
+                    mode: 'vietqr',
+                    bin,
+                    bankName,
+                    scheme,
+                    accountNo,
+                    accountName,
+                    senderScheme
+                };
+            }
+
+            saveState();
+            closeDripBankConfigModal();
+            syncAppConfigToSheets(false);
+            showToast('Đã lưu cấu hình mã QR nhận Quỹ Nhỏ Giọt!');
+        }
+
+        let lastDripCheckinAmount = 0;
+
+        function openDripQrTransferModal(amount, dateStr) {
+            lastDripCheckinAmount = Number(amount) || 0;
+            const cfg = state.dripBankConfig || {};
+            const configuredView = document.getElementById('drip-qr-configured-view');
+            const unconfiguredView = document.getElementById('drip-qr-unconfigured-view');
+            const isCustomMode = (cfg.mode === 'custom_qr' && cfg.customQrDataUrl) || (!cfg.accountNo && cfg.customQrDataUrl);
+            const isVietQrMode = !isCustomMode && cfg.accountNo && cfg.bin;
+
+            if (!isCustomMode && !isVietQrMode) {
+                configuredView.classList.add('hidden');
+                unconfiguredView.classList.remove('hidden');
+                document.getElementById('drip-qr-modal').classList.remove('hidden');
+                return;
+            }
+
+            configuredView.classList.remove('hidden');
+            unconfiguredView.classList.add('hidden');
+
+            const [y, m, d] = (dateStr || getTodayStr()).split('-');
+            const memo = `Quy nho giot ${d}/${m}`;
+
+            if (isCustomMode) {
+                document.getElementById('drip-vietqr-img').src = cfg.customQrDataUrl;
+                document.getElementById('drip-qr-amount-label').textContent = formatVND(amount);
+                document.getElementById('drip-qr-bank-label').textContent = cfg.customQrLabel || 'ZaloPay Sinh Lời Tự Động';
+                document.getElementById('drip-qr-name-label').textContent = 'Chụp màn hình / lưu ảnh QR để quét trên app';
+                document.getElementById('drip-qr-memo-label').textContent = `Số tiền cần chuyển: ${formatVND(amount)} (${memo})`;
+                document.getElementById('drip-qr-secondary-text').textContent = 'Copy Số tiền';
+            } else {
+                const qrUrl = `https://img.vietqr.io/image/${encodeURIComponent(cfg.bin)}-${encodeURIComponent(cfg.accountNo)}-compact2.png?amount=${Math.round(amount)}&addInfo=${encodeURIComponent(memo)}&accountName=${encodeURIComponent(cfg.accountName || '')}`;
+                document.getElementById('drip-vietqr-img').src = qrUrl;
+                document.getElementById('drip-qr-amount-label').textContent = formatVND(amount);
+                document.getElementById('drip-qr-bank-label').textContent = `${cfg.bankName} • ${cfg.accountNo}`;
+                document.getElementById('drip-qr-name-label').textContent = cfg.accountName || '';
+                document.getElementById('drip-qr-memo-label').textContent = `Nội dung CK: ${memo}`;
+                document.getElementById('drip-qr-secondary-text').textContent = 'Copy Số TK';
+            }
+
+            document.getElementById('drip-qr-modal').classList.remove('hidden');
+        }
+
+        function closeDripQrModal() {
+            document.getElementById('drip-qr-modal').classList.add('hidden');
+        }
+
+        function copyDripAccountNumber() {
+            const cfg = state.dripBankConfig || {};
+            const isCustomMode = (cfg.mode === 'custom_qr' && cfg.customQrDataUrl) || (!cfg.accountNo && cfg.customQrDataUrl);
+            const textToCopy = isCustomMode ? String(Math.round(lastDripCheckinAmount)) : (cfg.accountNo || '');
+            if (!textToCopy) return;
+            const ta = document.createElement('textarea');
+            ta.value = textToCopy;
+            document.body.appendChild(ta);
+            ta.select();
+            document.execCommand('copy');
+            document.body.removeChild(ta);
+            showToast(isCustomMode ? `Đã copy số tiền ${formatVND(lastDripCheckinAmount)}!` : `Đã copy số tài khoản ${textToCopy}!`);
+        }
+
+        function openConfiguredBankApp() {
+            const cfg = state.dripBankConfig || {};
+            copyDripAccountNumber();
+            const targetScheme = cfg.senderScheme || cfg.scheme || 'zalopay://';
+            window.location.href = targetScheme;
         }
 
         // ==================== CHUẨN HÓA NGÀY GIỜ VIỆT NAM (UTC+7) ====================
@@ -1448,146 +1756,55 @@
                     if (Array.isArray(parsed.categories) && parsed.categories.length > 0) state.categories = parsed.categories;
                     if (Array.isArray(parsed.jars)) state.jars = parsed.jars;
                     if (Array.isArray(parsed.transactions)) {
-                        state.transactions = parsed.transactions.map(t => ({
-                            ...t,
-                            type: t.type === 'transfer' ? 'wallet_transfer' : t.type,
-                            date: normalizeDateStr(t.date)
-                        }));
+                        state.transactions = parsed.transactions.map(t => {
+                            const detectedQ = extractQualityFromNote(t.note, t.quality);
+                            return {
+                                ...t,
+                                type: t.type === 'transfer' ? 'wallet_transfer' : t.type,
+                                date: normalizeDateStr(t.date),
+                                quality: detectedQ,
+                                note: stripQualityTagFromNote(t.note)
+                            };
+                        });
                     }
-                    if (parsed.sheetConfig) {
-                        state.sheetConfig = {
-                            ...state.sheetConfig,
-                            ...parsed.sheetConfig,
-                            webhookUrl: parsed.sheetConfig.webhookUrl || DEFAULT_WEBHOOK_URL
-                        };
-                    }
+                    if (parsed.sheetConfig) state.sheetConfig = { ...state.sheetConfig, ...parsed.sheetConfig };
                     if (Array.isArray(parsed.sheetRows)) state.sheetRows = parsed.sheetRows;
                     if (parsed.monthlyJournals && typeof parsed.monthlyJournals === 'object') state.monthlyJournals = parsed.monthlyJournals;
                     if (parsed.hourlyWage !== undefined) state.hourlyWage = Number(parsed.hourlyWage) || 0;
+                    if (parsed.dripBankConfig && typeof parsed.dripBankConfig === 'object') {
+                        state.dripBankConfig = { ...state.dripBankConfig, ...parsed.dripBankConfig };
+                    }
                     if (loadedFromOldKey) saveState();
-                }
-                if (!state.sheetConfig.webhookUrl) {
-                    state.sheetConfig.webhookUrl = DEFAULT_WEBHOOK_URL;
-                }
-                const sessionPin = sessionStorage.getItem(SESSION_PIN_KEY);
-                if (sessionPin) {
-                    state.sheetConfig.token = sessionPin;
                 }
             } catch (e) {
                 console.error('Lỗi đọc state:', e);
             }
         }
 
-        // ==================== MÀN HÌNH KHÓA PIN XÁC THỰC QUA GOOGLE SHEETS ====================
-        function getExpectedPinLength() {
-            const hinted = Number(localStorage.getItem(PIN_LEN_HINT_KEY));
-            return (hinted >= 4 && hinted <= 8) ? hinted : 4;
+        // ==================== XÁC THỰC MÃ PIN QUA GOOGLE SHEETS ====================
+        function getPinDotDisplayCount() {
+            const hinted = Number(localStorage.getItem(PIN_LEN_HINT_KEY)) || 4;
+            return Math.min(8, Math.max(hinted, pinBuffer.length, 4));
         }
 
         function renderPinDots() {
-            const targetLen = Math.max(getExpectedPinLength(), pinBuffer.length);
             const container = document.getElementById('pin-dots-container');
             if (!container) return;
+            const dotCount = getPinDotDisplayCount();
             let html = '';
-            for (let i = 0; i < targetLen; i++) {
+            for (let i = 0; i < dotCount; i++) {
                 html += `<div class="pin-dot w-3.5 h-3.5 rounded-full border-2 ${i < pinBuffer.length ? 'filled border-emerald-500 bg-emerald-500' : 'border-slate-600'}"></div>`;
             }
             container.innerHTML = html;
-            const promptEl = document.getElementById('pin-prompt-text');
-            if (promptEl && !promptEl.classList.contains('text-rose-400') && !isVerifyingPin) {
-                promptEl.textContent = 'Nhập mã PIN xác thực qua Google Sheets';
-            }
         }
 
         function handlePinPress(digit) {
             if (isVerifyingPin || pinBuffer.length >= 8) return;
-            const promptEl = document.getElementById('pin-prompt-text');
-            if (promptEl && promptEl.classList.contains('text-rose-400')) {
-                promptEl.classList.remove('text-rose-400');
-            }
             pinBuffer += digit;
             renderPinDots();
-            if (pinBuffer.length === getExpectedPinLength()) {
+            const hintedLen = Number(localStorage.getItem(PIN_LEN_HINT_KEY)) || 0;
+            if (hintedLen >= 4 && pinBuffer.length === hintedLen) {
                 submitPinVerification();
-            }
-        }
-
-        async function submitPinVerification() {
-            if (isVerifyingPin) return;
-            if (pinBuffer.length < 4) {
-                showToast('Vui lòng nhập mã PIN từ 4 đến 8 số!', 'error');
-                return;
-            }
-            const candidatePin = pinBuffer;
-            const webhookUrl = state.sheetConfig.webhookUrl || DEFAULT_WEBHOOK_URL;
-            const range = state.sheetConfig.range || 'Tổng Quan Danh Mục!A1:I15';
-
-            isVerifyingPin = true;
-            const promptEl = document.getElementById('pin-prompt-text');
-            const unlockBtn = document.getElementById('pin-unlock-btn');
-            if (promptEl) {
-                promptEl.textContent = 'Đang xác thực mã PIN với Google Sheets...';
-                promptEl.classList.remove('text-rose-400');
-                promptEl.classList.add('text-emerald-400');
-            }
-            if (unlockBtn) {
-                unlockBtn.disabled = true;
-                unlockBtn.classList.add('opacity-70');
-            }
-
-            try {
-                const queryUrl = `${webhookUrl}?pin=${encodeURIComponent(candidatePin)}&token=${encodeURIComponent(candidatePin)}&range=${encodeURIComponent(range)}&t=${Date.now()}`;
-                let data = null;
-                try {
-                    const res = await fetch(queryUrl, { method: 'GET', redirect: 'follow' });
-                    if (res.ok) data = await res.json();
-                } catch (_) {
-                    data = await fetchViaJsonp(queryUrl);
-                }
-
-                if (!data || data.status !== 'success') {
-                    throw new Error(data?.message || 'Mã PIN không chính xác!');
-                }
-
-                state.sheetConfig.token = candidatePin;
-                sessionStorage.setItem(SESSION_PIN_KEY, candidatePin);
-                localStorage.setItem(PIN_LEN_HINT_KEY, String(candidatePin.length));
-                applySheetPayloadToState(data);
-                saveState();
-                updateConnectionStatusUI(true);
-                refreshAllViews();
-
-                document.getElementById('pin-lock-screen').classList.add('hidden');
-                pinBuffer = '';
-                renderPinDots();
-                showToast('Xác thực thành công! Đã đồng bộ dữ liệu.');
-            } catch (err) {
-                const dotsBox = document.getElementById('pin-dots-container');
-                if (dotsBox) dotsBox.classList.add('animate-shake');
-                if (promptEl) {
-                    const msg = String(err && err.message ? err.message : '');
-                    if (msg.includes('Token')) {
-                        promptEl.textContent = 'Apps Script chưa cập nhật mã mới (Đang báo Sai Token)!';
-                    } else if (msg.includes('PIN')) {
-                        promptEl.textContent = 'Mã PIN không chính xác!';
-                    } else {
-                        promptEl.textContent = 'Không kết nối được Google Sheets (Hãy mở trên GitHub Pages)!';
-                    }
-                    promptEl.classList.remove('text-emerald-400');
-                    promptEl.classList.add('text-rose-400');
-                }
-                setTimeout(() => {
-                    if (dotsBox) dotsBox.classList.remove('animate-shake');
-                    pinBuffer = '';
-                    renderPinDots();
-                }, 650);
-            } finally {
-                isVerifyingPin = false;
-                if (promptEl) promptEl.classList.remove('text-emerald-400');
-                if (unlockBtn) {
-                    unlockBtn.disabled = false;
-                    unlockBtn.classList.remove('opacity-70');
-                }
             }
         }
 
@@ -1603,12 +1820,80 @@
             renderPinDots();
         }
 
+        async function submitPinVerification() {
+            if (isVerifyingPin) return;
+            if (pinBuffer.length < 4) {
+                showToast('Vui lòng nhập mã PIN từ 4 đến 8 chữ số!', 'error');
+                return;
+            }
+
+            const webhookUrl = state.sheetConfig.webhookUrl || DEFAULT_WEBHOOK_URL;
+            const range = state.sheetConfig.range || 'Tổng Quan Danh Mục!A1:I15';
+            const btn = document.getElementById('pin-unlock-btn');
+            const promptEl = document.getElementById('pin-prompt-text');
+
+            isVerifyingPin = true;
+            if (btn) btn.innerHTML = '<span>Đang xác thực qua Google Sheets...</span>';
+            if (promptEl) {
+                promptEl.textContent = 'Đang kiểm tra mã PIN với máy chủ...';
+                promptEl.classList.remove('text-rose-400');
+            }
+
+            try {
+                const queryUrl = `${webhookUrl}?pin=${encodeURIComponent(pinBuffer)}&token=${encodeURIComponent(pinBuffer)}&range=${encodeURIComponent(range)}&t=${Date.now()}`;
+                let data = null;
+
+                try {
+                    const res = await fetch(queryUrl, { method: 'GET', redirect: 'follow' });
+                    if (res.ok) data = await res.json();
+                } catch (_) {
+                    data = await fetchViaJsonp(queryUrl);
+                }
+
+                if (!data || data.status !== 'success') {
+                    throw new Error(data?.message || 'Mã PIN không chính xác!');
+                }
+
+                localStorage.setItem(PIN_LEN_HINT_KEY, String(pinBuffer.length));
+                sessionStorage.setItem(SESSION_PIN_KEY, pinBuffer);
+                state.sheetConfig.token = pinBuffer;
+
+                applySheetPayloadToState(data);
+                saveState();
+                updateConnectionStatusUI(true);
+                refreshAllViews();
+
+                document.getElementById('pin-lock-screen').classList.add('hidden');
+                pinBuffer = '';
+                renderPinDots();
+                showToast('Mở khóa & đồng bộ dữ liệu thành công!');
+            } catch (err) {
+                const dotsBox = document.getElementById('pin-dots-container');
+                if (dotsBox) dotsBox.classList.add('animate-shake');
+                if (promptEl) {
+                    promptEl.textContent = err.message || 'Mã PIN không đúng, vui lòng thử lại';
+                    promptEl.classList.add('text-rose-400');
+                }
+                setTimeout(() => {
+                    if (dotsBox) dotsBox.classList.remove('animate-shake');
+                    pinBuffer = '';
+                    renderPinDots();
+                }, 400);
+            } finally {
+                isVerifyingPin = false;
+                if (btn) btn.innerHTML = '<span>Mở khóa & Đồng bộ</span>';
+            }
+        }
+
         function lockAppNow() {
             pinBuffer = '';
             sessionStorage.removeItem(SESSION_PIN_KEY);
             state.sheetConfig.token = '';
             const promptEl = document.getElementById('pin-prompt-text');
-            promptEl.classList.remove('text-rose-400', 'text-emerald-400');
+            if (promptEl) {
+                promptEl.textContent = 'Nhập mã PIN xác thực qua Google Sheets';
+                promptEl.classList.remove('text-rose-400');
+            }
             renderPinDots();
             document.getElementById('pin-lock-screen').classList.remove('hidden');
         }
@@ -1617,7 +1902,7 @@
             const oldPin = document.getElementById('old-pin-input').value.trim();
             const newPin = document.getElementById('new-pin-input').value.trim();
             if (!/^\d{4,8}$/.test(oldPin) || !/^\d{4,8}$/.test(newPin)) {
-                showToast('PIN cũ và PIN mới phải gồm từ 4 đến 8 chữ số!', 'error');
+                showToast('Mã PIN cũ và mới phải gồm từ 4 đến 8 chữ số!', 'error');
                 return;
             }
             const webhookUrl = state.sheetConfig.webhookUrl || DEFAULT_WEBHOOK_URL;
@@ -1625,33 +1910,43 @@
             if (btn) btn.disabled = true;
 
             try {
-                const url = `${webhookUrl}?action=changePin&oldPin=${encodeURIComponent(oldPin)}&newPin=${encodeURIComponent(newPin)}&t=${Date.now()}`;
-                let resData = null;
+                const queryUrl = `${webhookUrl}?action=changePin&oldPin=${encodeURIComponent(oldPin)}&newPin=${encodeURIComponent(newPin)}&t=${Date.now()}`;
+                let data = null;
                 try {
-                    const res = await fetch(url, { method: 'GET', redirect: 'follow' });
-                    if (res.ok) resData = await res.json();
+                    const res = await fetch(queryUrl, { method: 'GET', redirect: 'follow' });
+                    if (res.ok) data = await res.json();
                 } catch (_) {
-                    resData = await fetchViaJsonp(url);
+                    data = await fetchViaJsonp(queryUrl);
                 }
 
-                if (!resData || resData.status !== 'success') {
-                    throw new Error(resData?.message || 'PIN cũ không chính xác!');
+                if (!data || data.status !== 'success') {
+                    throw new Error(data?.message || 'Không thể đổi mã PIN trên Sheet!');
                 }
 
-                state.sheetConfig.token = newPin;
-                sessionStorage.setItem(SESSION_PIN_KEY, newPin);
                 localStorage.setItem(PIN_LEN_HINT_KEY, String(newPin.length));
+                sessionStorage.setItem(SESSION_PIN_KEY, newPin);
+                state.sheetConfig.token = newPin;
+                saveState();
+
                 document.getElementById('old-pin-input').value = '';
                 document.getElementById('new-pin-input').value = '';
-                const settingTokenInp = document.getElementById('setting-webhook-token');
-                if (settingTokenInp) settingTokenInp.value = newPin;
+                document.getElementById('setting-webhook-token').value = newPin;
                 renderPinDots();
-                showToast(`Đã đổi mã PIN thành công (${newPin.length} số) trên Google Sheets!`);
+                showToast('Đã đổi mã PIN thành công trên Google Sheets!');
             } catch (err) {
-                showToast(err.message || 'Không thể đổi mã PIN, hãy kiểm tra lại PIN cũ!', 'error');
+                showToast(err.message || 'Lỗi đổi mã PIN!', 'error');
             } finally {
                 if (btn) btn.disabled = false;
             }
+        }
+
+        function saveHourlyWageSetting() {
+            const val = parseCurrencyInput(document.getElementById('setting-hourly-wage')?.value);
+            state.hourlyWage = val;
+            saveState();
+            refreshAllViews();
+            syncAppConfigToSheets(false);
+            showToast(val > 0 ? `Đã lưu mức lương ${formatVND(val)}/giờ!` : 'Đã tắt quy đổi giờ công lao động!');
         }
 
         // ==================== TIỆN ÍCH VÍ, CHUYỂN VÍ & HẠNG MỤC ====================
@@ -1712,12 +2007,6 @@
                     return;
                 }
 
-                // Chuyển nội bộ từ Quỹ Nhỏ Giọt sang Hũ khác không làm thay đổi số dư các ví
-                if ((tx.type === 'jar_withdraw' && tx.jarId === DRIP_JAR_ID && (tx.toJarId || String(tx.note || '').includes('Chuyển từ Quỹ Nhỏ Giọt sang'))) ||
-                    (tx.type === 'jar_deposit' && String(tx.note || '').includes('Chuyển từ Quỹ Nhỏ Giọt sang'))) {
-                    return;
-                }
-
                 const wId = resolveWalletIdForTx(tx);
                 if (walletBalances[wId] === undefined) return;
 
@@ -1728,6 +2017,9 @@
                 } else if (tx.type === 'jar_deposit') {
                     walletBalances[wId] -= amt;
                 } else if (tx.type === 'jar_withdraw') {
+                    if (tx.toJarId || (tx.note && String(tx.note).includes('Chuyển từ Quỹ Nhỏ Giọt sang'))) {
+                        return;
+                    }
                     walletBalances[wId] += amt;
                 } else if (tx.type === 'debt') {
                     if (tx.debtSubType === 'borrow' || tx.debtSubType === 'collect') walletBalances[wId] += amt;
@@ -1736,54 +2028,6 @@
             });
 
             return walletBalances;
-        }
-
-        // ==================== TÍNH TOÁN SỐ DƯ & LỊCH ĐIỂM DANH QUỸ NHỎ GIỌT ====================
-        function calculateDripFundStats(selectedMonth) {
-            const dripTxs = state.transactions.filter(t =>
-                (t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === DRIP_JAR_ID
-            );
-            let totalDeposited = 0;
-            let totalWithdrawn = 0;
-            const dailyDepositMap = {};
-
-            dripTxs.forEach(t => {
-                const amt = Number(t.amount) || 0;
-                const dNorm = normalizeDateStr(t.date);
-                if (t.type === 'jar_deposit') {
-                    totalDeposited += amt;
-                    if (dNorm) dailyDepositMap[dNorm] = (dailyDepositMap[dNorm] || 0) + amt;
-                } else if (t.type === 'jar_withdraw') {
-                    totalWithdrawn += amt;
-                }
-            });
-
-            const balance = Math.max(0, totalDeposited - totalWithdrawn);
-            let monthAdded = 0;
-            let monthCheckedDays = 0;
-            Object.entries(dailyDepositMap).forEach(([dStr, amt]) => {
-                if (selectedMonth && dStr.startsWith(selectedMonth)) {
-                    monthAdded += amt;
-                    if (amt > 0) monthCheckedDays += 1;
-                }
-            });
-
-            // Tính chuỗi điểm danh liên tiếp (Streak)
-            let streak = 0;
-            const today = new Date();
-            for (let i = 0; i < 365; i++) {
-                const d = new Date(today.getFullYear(), today.getMonth(), today.getDate() - i);
-                const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-                if ((dailyDepositMap[key] || 0) > 0) {
-                    streak++;
-                } else if (i === 0) {
-                    continue; // Hôm nay chưa nộp thì xét từ hôm qua
-                } else {
-                    break;
-                }
-            }
-
-            return { balance, totalDeposited, totalWithdrawn, monthAdded, monthCheckedDays, streak, dailyDepositMap };
         }
 
         // ==================== CHUYỂN TAB & THÁNG ====================
@@ -1825,13 +2069,13 @@
             renderSettingsTab();
         }
 
-        // ==================== RENDER TAB 1: TỔNG QUAN ====================
+        // ==================== RENDER TAB 1: TỔNG QUAN & CHỈ SỐ RUNWAY ====================
         function renderOverviewTab() {
             const selectedMonth = document.getElementById('month-filter').value;
             const walletBalances = calculateGlobalBalances();
             const totalWallets = Object.values(walletBalances).reduce((a, b) => a + b, 0);
-            const dripStats = calculateDripFundStats(selectedMonth);
-            const totalJars = state.jars.reduce((s, j) => s + (Number(j.current) || 0), 0) + dripStats.balance;
+            const totalJars = state.jars.reduce((s, j) => s + (Number(j.current) || 0), 0);
+            const dripStats = calculateDripJarStats(selectedMonth);
 
             const monthTxs = state.transactions.filter(t => {
                 const norm = normalizeDateStr(t.date);
@@ -1851,11 +2095,10 @@
             diffEl.textContent = `Chênh lệch: ${netDiff >= 0 ? '+' : ''}${formatCompactVND(netDiff) || '0 ₫'}`;
             diffEl.className = `font-bold ${netDiff >= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
 
-            document.getElementById('kpi-total-jars').textContent = formatVND(totalJars);
-            document.getElementById('kpi-jar-count').textContent = `${state.jars.length} hũ + Quỹ nhỏ giọt (${formatCompactVND(dripStats.balance) || '0đ'})`;
+            document.getElementById('kpi-total-jars').textContent = formatVND(totalJars + dripStats.balance);
+            document.getElementById('kpi-jar-count').textContent = `${state.jars.length} hũ + Quỹ nhỏ giọt`;
 
-            // Tính Chỉ số Tự do Thời gian (Runway) & So sánh cùng kỳ tháng trước / TB 3 tháng
-            renderRunwayAndComparisonKPIs(selectedMonth, totalWallets + totalJars, totalExp);
+            renderRunwayAndComparisonKPIs(selectedMonth, totalWallets + totalJars + dripStats.balance, totalExp);
 
             document.getElementById('wallet-count-badge').textContent = `${state.wallets.length} ví`;
             const walletsGrid = document.getElementById('wallets-grid');
@@ -1929,7 +2172,7 @@
             }
         }
 
-        function renderRunwayAndComparisonKPIs(selectedMonth, totalLiquidAssets, currentMonthExp) {
+        function renderRunwayAndComparisonKPIs(selectedMonth, totalSurvivalFunds, curMonthExpense) {
             const runwayEl = document.getElementById('kpi-runway-months');
             const runwayDesc = document.getElementById('kpi-runway-desc');
             const cmpPrevEl = document.getElementById('kpi-compare-prev');
@@ -1946,53 +2189,60 @@
                     .reduce((s, t) => s + (Number(t.amount) || 0), 0);
                 if (sum > 0) past3Totals.push(sum);
             }
-            const avg3 = past3Totals.length > 0
-                ? past3Totals.reduce((a, b) => a + b, 0) / past3Totals.length
-                : currentMonthExp;
 
-            if (avg3 > 0) {
-                if (totalLiquidAssets <= 0) {
+            const avg3Expense = past3Totals.length > 0
+                ? past3Totals.reduce((a, b) => a + b, 0) / past3Totals.length
+                : curMonthExpense;
+
+            const formattedFundStr = `${totalSurvivalFunds < 0 ? '-' : ''}${formatCompactVND(totalSurvivalFunds) || '0đ'}`;
+            if (avg3Expense > 0) {
+                if (totalSurvivalFunds <= 0) {
                     runwayEl.textContent = '0,0 tháng';
-                    const signStr = totalLiquidAssets < 0 ? '-' : '';
-                    runwayDesc.textContent = `Tổng quỹ (${signStr}${formatCompactVND(totalLiquidAssets) || '0đ'}) ÷ Chi TB ${formatCompactVND(avg3)}/tháng`;
+                    runwayEl.className = 'text-xl sm:text-2xl font-heading font-extrabold text-rose-600';
+                    runwayDesc.textContent = `Tổng quỹ (${formattedFundStr}) ÷ Chi TB ${formatCompactVND(avg3Expense)}/tháng`;
                 } else {
-                    const months = (totalLiquidAssets / avg3).toFixed(1).replace('.', ',');
-                    runwayEl.textContent = `${months} tháng`;
-                    runwayDesc.textContent = `Tổng quỹ (${formatCompactVND(totalLiquidAssets)}) ÷ Chi TB ${formatCompactVND(avg3)}/tháng`;
+                    const months = totalSurvivalFunds / avg3Expense;
+                    runwayEl.textContent = `${months.toFixed(1).replace('.', ',')} tháng`;
+                    runwayEl.className = 'text-xl sm:text-2xl font-heading font-extrabold text-teal-700';
+                    runwayDesc.textContent = `Tổng quỹ (${formattedFundStr}) ÷ Chi TB ${formatCompactVND(avg3Expense)}/tháng`;
                 }
             } else {
-                runwayEl.textContent = '∞ tháng';
-                runwayDesc.textContent = 'Chưa phát sinh chi tiêu bình quân';
+                runwayEl.textContent = '-- tháng';
+                runwayEl.className = 'text-xl sm:text-2xl font-heading font-extrabold text-teal-700';
+                runwayDesc.textContent = 'Cần ít nhất 1 tháng chi tiêu để ước tính thời gian sinh tồn';
             }
 
-            // So sánh cùng kỳ (tính đến cùng số ngày trong tháng trước)
-            const prevDateObj = new Date(y, m - 2, 1);
-            const prevYM = `${prevDateObj.getFullYear()}-${String(prevDateObj.getMonth() + 1).padStart(2, '0')}`;
-            const todayStr = getTodayStr();
-            const cutoffDay = todayStr.startsWith(selectedMonth) ? Number(todayStr.split('-')[2]) : 31;
+            const prevDate = new Date(y, m - 2, 1);
+            const prevYM = `${prevDate.getFullYear()}-${String(prevDate.getMonth() + 1).padStart(2, '0')}`;
+            const todayDay = Math.min(new Date().getDate(), 31);
+            const isCurrentMonth = selectedMonth === getTodayStr().slice(0, 7);
 
             const prevSamePeriodExp = state.transactions
                 .filter(t => {
                     if (t.type !== 'expense') return false;
-                    const dn = normalizeDateStr(t.date);
-                    if (!dn.startsWith(prevYM)) return false;
-                    return Number(dn.split('-')[2]) <= cutoffDay;
+                    const norm = normalizeDateStr(t.date);
+                    if (!norm.startsWith(prevYM)) return false;
+                    if (!isCurrentMonth) return true;
+                    const dayNum = Number(norm.split('-')[2]) || 0;
+                    return dayNum <= todayDay;
                 })
                 .reduce((s, t) => s + (Number(t.amount) || 0), 0);
 
             if (prevSamePeriodExp > 0) {
-                const pctDiff = Math.round(((currentMonthExp - prevSamePeriodExp) / prevSamePeriodExp) * 100);
-                const sign = pctDiff > 0 ? '+' : '';
-                cmpPrevEl.innerHTML = `<span class="${pctDiff > 0 ? 'text-rose-600' : 'text-emerald-600'}">${sign}${pctDiff}%</span> <span class="text-xs font-medium text-slate-600">so với cùng kỳ tháng trước (${formatCompactVND(prevSamePeriodExp)})</span>`;
+                const diffPct = Math.round(((curMonthExpense - prevSamePeriodExp) / prevSamePeriodExp) * 100);
+                const sign = diffPct > 0 ? '+' : '';
+                cmpPrevEl.textContent = `${sign}${diffPct}% so với cùng kỳ tháng trước`;
+                cmpPrevEl.className = `text-sm sm:text-base font-heading font-extrabold ${diffPct <= 0 ? 'text-emerald-600' : 'text-rose-600'}`;
             } else {
                 cmpPrevEl.textContent = `Tháng trước cùng kỳ: 0 ₫`;
+                cmpPrevEl.className = 'text-sm sm:text-base font-heading font-extrabold text-slate-900';
             }
 
             if (past3Totals.length > 0) {
-                const avgDiffPct = Math.round(((currentMonthExp - avg3) / avg3) * 100);
-                cmpAvg3El.textContent = `TB 3 tháng gần nhất: ${formatVND(avg3)} (${avgDiffPct > 0 ? '+' : ''}${avgDiffPct}%)`;
+                const avgPct = Math.round(((curMonthExpense - avg3Expense) / avg3Expense) * 100);
+                cmpAvg3El.textContent = `TB 3 tháng gần nhất: ${formatVND(avg3Expense)} (${avgPct > 0 ? '+' : ''}${avgPct}%)`;
             } else {
-                cmpAvg3El.textContent = `Chưa đủ dữ liệu 3 tháng trước để so sánh`;
+                cmpAvg3El.textContent = 'Chưa có dữ liệu 3 tháng trước để so sánh trung bình';
             }
         }
 
@@ -2071,65 +2321,123 @@
             }).join('');
         }
 
-        // ==================== RENDER TAB 2: HŨ MỤC TIÊU & VAY NỢ ====================
-        function renderDripFundSection() {
-            const selectedMonth = document.getElementById('month-filter').value;
-            const stats = calculateDripFundStats(selectedMonth);
+        // ==================== QUỸ NHỎ GIỌT & ĐIỂM DANH TIẾT KIỆM HẰNG NGÀY ====================
+        function calculateDripJarStats(selectedMonth) {
+            const dripTxs = state.transactions.filter(t => t.jarId === DRIP_JAR_ID && (t.type === 'jar_deposit' || t.type === 'jar_withdraw'));
+            let totalIn = 0;
+            let totalOut = 0;
+            const dailyDepositMap = {};
 
+            dripTxs.forEach(tx => {
+                const amt = Number(tx.amount) || 0;
+                const dNorm = normalizeDateStr(tx.date);
+                if (tx.type === 'jar_deposit') {
+                    totalIn += amt;
+                    if (dNorm) dailyDepositMap[dNorm] = (dailyDepositMap[dNorm] || 0) + amt;
+                } else if (tx.type === 'jar_withdraw') {
+                    totalOut += amt;
+                }
+            });
+
+            const balance = Math.max(0, totalIn - totalOut);
+            let monthAdded = 0;
+            let monthDays = 0;
+            Object.entries(dailyDepositMap).forEach(([dStr, amt]) => {
+                if (selectedMonth && dStr.startsWith(selectedMonth) && amt > 0) {
+                    monthAdded += amt;
+                    monthDays += 1;
+                }
+            });
+
+            let streak = 0;
+            const today = new Date();
+            const todayStr = getTodayStr();
+            let cursor = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            if (!dailyDepositMap[todayStr]) {
+                cursor.setDate(cursor.getDate() - 1);
+            }
+            while (true) {
+                const ymStr = `${cursor.getFullYear()}-${String(cursor.getMonth() + 1).padStart(2, '0')}-${String(cursor.getDate()).padStart(2, '0')}`;
+                if (dailyDepositMap[ymStr] > 0) {
+                    streak += 1;
+                    cursor.setDate(cursor.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+
+            return { totalIn, totalOut, balance, monthAdded, monthDays, streak, dailyDepositMap, dripTxs };
+        }
+
+        function renderDripJarSection(selectedMonth) {
+            const stats = calculateDripJarStats(selectedMonth);
             const balEl = document.getElementById('drip-current-balance');
             if (!balEl) return;
+
             balEl.textContent = formatVND(stats.balance);
-            document.getElementById('drip-lifetime-stats').textContent = `Tổng tích: ${formatCompactVND(stats.totalDeposited) || '0đ'} • Đã rút: ${formatCompactVND(stats.totalWithdrawn) || '0đ'}`;
+            document.getElementById('drip-lifetime-stats').textContent = `Tổng tích: ${formatCompactVND(stats.totalIn) || '0đ'} • Đã rút: ${formatCompactVND(stats.totalOut) || '0đ'}`;
             document.getElementById('drip-month-added').textContent = `+${formatVND(stats.monthAdded)}`;
-            document.getElementById('drip-month-days').textContent = `Đã điểm danh ${stats.monthCheckedDays} ngày trong tháng`;
+            document.getElementById('drip-month-days').textContent = `Đã điểm danh ${stats.monthDays} ngày trong tháng`;
             document.getElementById('drip-streak-count').textContent = `${stats.streak} ngày 🔥`;
 
             if (!selectedMonth) return;
             const [y, m] = selectedMonth.split('-').map(Number);
-            document.getElementById('drip-calendar-label').textContent = `Bảng điểm danh tháng ${String(m).padStart(2, '0')}/${y}`;
+            document.getElementById('drip-calendar-label').textContent = `Bảng điểm danh Tháng ${String(m).padStart(2, '0')}/${y}`;
 
             const firstDay = new Date(y, m - 1, 1);
             const daysInMonth = new Date(y, m, 0).getDate();
             const startOffset = (firstDay.getDay() + 6) % 7;
             const todayStr = getTodayStr();
-            const grid = document.getElementById('drip-calendar-grid');
 
             let html = '';
             for (let i = 0; i < startOffset; i++) {
-                html += `<div class="min-h-[58px] rounded-xl bg-slate-50/50"></div>`;
+                html += `<div class="min-h-[58px] sm:min-h-[68px] rounded-xl bg-slate-50/50"></div>`;
             }
 
             for (let day = 1; day <= daysInMonth; day++) {
                 const dateStr = `${selectedMonth}-${String(day).padStart(2, '0')}`;
-                const amt = stats.dailyDepositMap[dateStr] || 0;
-                const isPastOrToday = dateStr <= todayStr;
+                const depositedAmt = stats.dailyDepositMap[dateStr] || 0;
                 const isToday = dateStr === todayStr;
+                const isPast = dateStr < todayStr;
 
-                let statusBadge = '<span class="text-slate-300 text-xs">•</span>';
-                let amtLabel = '';
-                let cardCls = 'border-slate-100 bg-slate-50/40 hover:bg-slate-100/70';
-
-                if (amt > 0) {
-                    statusBadge = '<span class="text-base sm:text-lg leading-none">✅</span>';
-                    amtLabel = `<span class="text-[10px] font-extrabold text-emerald-700 truncate">${formatCompactVND(amt)}</span>`;
-                    cardCls = 'border-emerald-300 bg-emerald-50/80 hover:bg-emerald-100/80';
-                } else if (isPastOrToday) {
-                    statusBadge = '<span class="text-xs sm:text-sm leading-none opacity-80">❌</span>';
-                    amtLabel = `<span class="text-[9px] text-rose-400 font-medium">Chưa nộp</span>`;
-                    cardCls = isToday
-                        ? 'border-amber-400 ring-1 ring-amber-300 bg-amber-50/40 hover:bg-amber-50'
-                        : 'border-rose-100 bg-rose-50/30 hover:bg-rose-50/70';
+                if (depositedAmt > 0) {
+                    const checkedClickAttr = isToday ? `onclick="openDripCheckinModal()" title="Bấm để nộp thêm điểm danh hôm nay"` : `title="Đã điểm danh ngày ${day}/${m}"`;
+                    html += `
+                        <div ${checkedClickAttr} class="min-h-[60px] sm:min-h-[70px] p-1 rounded-xl border ${isToday ? 'border-emerald-500 ring-1 ring-emerald-400 cursor-pointer' : 'border-emerald-200 cursor-default'} bg-emerald-50/70 flex flex-col items-center justify-between transition">
+                            <span class="text-[10px] font-bold text-slate-500 self-start pl-1">${day}</span>
+                            <span class="text-base sm:text-lg leading-none">✅</span>
+                            <span class="text-[10px] sm:text-[11px] font-extrabold text-emerald-700 truncate max-w-full">${formatCompactVND(depositedAmt)}</span>
+                        </div>
+                    `;
+                } else if (isPast) {
+                    html += `
+                        <div title="Đã bỏ lỡ ngày ${day}/${m} (không điểm danh bù)" class="min-h-[60px] sm:min-h-[70px] p-1 rounded-xl border border-rose-100 bg-rose-50/35 flex flex-col items-center justify-between opacity-80 cursor-not-allowed select-none">
+                            <span class="text-[10px] font-bold text-slate-400 self-start pl-1">${day}</span>
+                            <span class="text-sm sm:text-base leading-none opacity-80">❌</span>
+                            <span class="text-[9px] font-medium text-rose-400">Bỏ lỡ</span>
+                        </div>
+                    `;
+                } else {
+                    if (isToday) {
+                        html += `
+                            <button type="button" onclick="openDripCheckinModal()" class="min-h-[60px] sm:min-h-[70px] p-1 rounded-xl border border-emerald-500 ring-1 ring-emerald-400 bg-emerald-50/40 hover:bg-emerald-100/60 flex flex-col items-center justify-between transition cursor-pointer">
+                                <span class="text-[10px] font-bold text-emerald-700 self-start pl-1">${day}</span>
+                                <span class="text-xs font-extrabold text-emerald-600">+ Nộp</span>
+                                <span class="text-[9px] font-semibold text-emerald-700">Hôm nay</span>
+                            </button>
+                        `;
+                    } else {
+                        html += `
+                            <div title="Chưa tới ngày ${day}/${m}" class="min-h-[60px] sm:min-h-[70px] p-1 rounded-xl border border-slate-100 bg-white flex flex-col items-center justify-between opacity-65 cursor-default select-none">
+                                <span class="text-[10px] font-bold text-slate-400 self-start pl-1">${day}</span>
+                                <span class="text-xs text-slate-300">•</span>
+                                <span class="text-[9px] text-slate-300">--</span>
+                            </div>
+                        `;
+                    }
                 }
-
-                html += `
-                    <${isToday ? `button type="button" onclick="openDripCheckinModal()"` : 'div'} class="min-h-[62px] sm:min-h-[70px] p-1 rounded-xl border ${cardCls} flex flex-col items-center justify-between transition ${isToday ? 'cursor-pointer' : 'cursor-default select-none'}">
-                        <span class="w-full text-left text-[10px] font-bold ${isToday ? 'text-amber-700' : 'text-slate-500'} px-0.5">${day}</span>
-                        ${statusBadge}
-                        <div class="h-3.5 flex items-center justify-center w-full overflow-hidden">${amtLabel}</div>
-                    </${isToday ? 'button' : 'div'}>
-                `;
             }
-            grid.innerHTML = html;
+            document.getElementById('drip-calendar-grid').innerHTML = html;
         }
 
         function openDripCheckinModal() {
@@ -2152,13 +2460,13 @@
             e.preventDefault();
             const amount = parseCurrencyInput(document.getElementById('drip-checkin-amount').value);
             if (amount <= 0) {
-                showToast('Vui lòng nhập số tiền điểm danh lớn hơn 0!', 'error');
+                showToast('Vui lòng nhập số tiền lớn hơn 0!', 'error');
                 return;
             }
             const dateVal = getTodayStr();
             const walletId = document.getElementById('drip-checkin-wallet').value;
             const wallet = getWalletById(walletId);
-            const noteInput = document.getElementById('drip-checkin-note').value.trim();
+            const noteVal = document.getElementById('drip-checkin-note').value.trim() || 'Điểm danh Quỹ Nhỏ Giọt';
 
             const txObj = {
                 id: `tx_drip_${Date.now()}`,
@@ -2168,7 +2476,7 @@
                 amount: amount,
                 walletId: wallet.id,
                 wallet: wallet.name,
-                note: noteInput || `Điểm danh Quỹ Nhỏ Giọt ngày ${formatDateVN(dateVal)}`
+                note: noteVal
             };
 
             state.transactions.unshift(txObj);
@@ -2177,28 +2485,28 @@
             refreshAllViews();
             showToast(`✅ Đã điểm danh +${formatVND(amount)} vào Quỹ Nhỏ Giọt!`);
             syncToGoogleSheets('ADD_TRANSACTION', { transaction: txObj });
+            openDripQrTransferModal(amount, dateVal);
         }
 
         function openDripWithdrawModal() {
-            const stats = calculateDripFundStats(document.getElementById('month-filter').value);
+            const selectedMonth = document.getElementById('month-filter').value;
+            const stats = calculateDripJarStats(selectedMonth);
             if (stats.balance <= 0) {
-                showToast('Quỹ Nhỏ Giọt hiện đang có 0 ₫, chưa có số dư để rút!', 'info');
+                showToast('Quỹ Nhỏ Giọt hiện đang 0 ₫, chưa có số dư để rút!', 'info');
                 return;
             }
             populateWalletSelects();
             document.getElementById('drip-modal-avail-bal').textContent = formatVND(stats.balance);
+            document.getElementById('drip-withdraw-amount').value = '';
+            document.getElementById('drip-withdraw-date').value = getTodayStr();
             document.getElementById('drip-withdraw-target-type').value = 'wallet';
             toggleDripWithdrawTarget();
 
             const jarSel = document.getElementById('drip-withdraw-jar');
-            if (jarSel) {
-                jarSel.innerHTML = state.jars.length > 0
-                    ? state.jars.map(j => `<option value="${j.id}">${j.icon} ${j.name} (${formatVND(j.current)})</option>`).join('')
-                    : `<option value="">(Chưa có Hũ mục tiêu nào)</option>`;
-            }
+            jarSel.innerHTML = state.jars.length > 0
+                ? state.jars.map(j => `<option value="${j.id}">${j.icon} ${j.name} (${formatVND(j.current)})</option>`).join('')
+                : `<option value="">(Chưa có Hũ mục tiêu nào)</option>`;
 
-            document.getElementById('drip-withdraw-amount').value = '';
-            document.getElementById('drip-withdraw-date').value = getTodayStr();
             document.getElementById('drip-withdraw-modal').classList.remove('hidden');
         }
 
@@ -2207,70 +2515,36 @@
         }
 
         function toggleDripWithdrawTarget() {
-            const mode = document.getElementById('drip-withdraw-target-type').value;
-            document.getElementById('drip-withdraw-wallet-wrap').classList.toggle('hidden', mode !== 'wallet');
-            document.getElementById('drip-withdraw-jar-wrap').classList.toggle('hidden', mode !== 'jar');
+            const targetType = document.getElementById('drip-withdraw-target-type').value;
+            document.getElementById('drip-withdraw-wallet-wrap').classList.toggle('hidden', targetType !== 'wallet');
+            document.getElementById('drip-withdraw-jar-wrap').classList.toggle('hidden', targetType !== 'jar');
         }
 
         function fillMaxDripWithdraw() {
-            const stats = calculateDripFundStats(document.getElementById('month-filter').value);
-            document.getElementById('drip-withdraw-amount').value = stats.balance.toLocaleString('vi-VN');
+            const selectedMonth = document.getElementById('month-filter').value;
+            const stats = calculateDripJarStats(selectedMonth);
+            document.getElementById('drip-withdraw-amount').value = Number(stats.balance).toLocaleString('vi-VN');
         }
 
         function handleDripWithdrawSubmit(e) {
             e.preventDefault();
-            const stats = calculateDripFundStats(document.getElementById('month-filter').value);
+            const selectedMonth = document.getElementById('month-filter').value;
+            const stats = calculateDripJarStats(selectedMonth);
             const amount = parseCurrencyInput(document.getElementById('drip-withdraw-amount').value);
+
             if (amount <= 0) {
-                showToast('Vui lòng nhập số tiền cần rút!', 'error');
+                showToast('Vui lòng nhập số tiền hợp lệ!', 'error');
                 return;
             }
             if (amount > stats.balance) {
-                showToast(`Số tiền rút không được vượt quá số dư quỹ (${formatVND(stats.balance)})!`, 'error');
+                showToast(`Số dư Quỹ Nhỏ Giọt chỉ còn ${formatVND(stats.balance)}!`, 'error');
                 return;
             }
 
-            const mode = document.getElementById('drip-withdraw-target-type').value;
+            const targetType = document.getElementById('drip-withdraw-target-type').value;
             const dateVal = normalizeDateStr(document.getElementById('drip-withdraw-date').value) || getTodayStr();
 
-            if (mode === 'jar') {
-                const targetJarId = document.getElementById('drip-withdraw-jar').value;
-                const targetJar = state.jars.find(j => j.id === targetJarId);
-                if (!targetJar) {
-                    showToast('Vui lòng chọn Hũ mục tiêu nhận tiền!', 'error');
-                    return;
-                }
-                targetJar.current = (Number(targetJar.current) || 0) + amount;
-                const nowTs = Date.now();
-
-                const txOut = {
-                    id: `tx_drip_out_${nowTs}`,
-                    date: dateVal,
-                    type: 'jar_withdraw',
-                    jarId: DRIP_JAR_ID,
-                    toJarId: targetJar.id,
-                    amount: amount,
-                    wallet: `Chuyển sang ${targetJar.name}`,
-                    note: `Chuyển từ Quỹ Nhỏ Giọt sang ${targetJar.name}`
-                };
-                const txIn = {
-                    id: `tx_jar_in_${nowTs + 1}`,
-                    date: dateVal,
-                    type: 'jar_deposit',
-                    jarId: targetJar.id,
-                    amount: amount,
-                    wallet: 'Quỹ Nhỏ Giọt',
-                    note: `Chuyển từ Quỹ Nhỏ Giọt sang ${targetJar.name}`
-                };
-                state.transactions.unshift(txIn, txOut);
-                saveState();
-                closeDripWithdrawModal();
-                refreshAllViews();
-                showToast(`Đã chuyển ${formatVND(amount)} từ Quỹ Nhỏ Giọt sang ${targetJar.name}!`);
-                syncToGoogleSheets('ADD_TRANSACTION', { transaction: txOut });
-                syncToGoogleSheets('ADD_TRANSACTION', { transaction: txIn });
-                syncToGoogleSheets('SYNC_JARS', { jars: state.jars });
-            } else {
+            if (targetType === 'wallet') {
                 const walletId = document.getElementById('drip-withdraw-wallet').value;
                 const wallet = getWalletById(walletId);
                 const txObj = {
@@ -2281,20 +2555,50 @@
                     amount: amount,
                     walletId: wallet.id,
                     wallet: wallet.name,
-                    note: `Rút từ Quỹ Nhỏ Giọt về ${wallet.name}`
+                    note: `Rút Quỹ Nhỏ Giọt về ví ${wallet.name}`
                 };
                 state.transactions.unshift(txObj);
                 saveState();
                 closeDripWithdrawModal();
                 refreshAllViews();
-                showToast(`Đã rút ${formatVND(amount)} về ${wallet.name} & trừ quỹ!`);
+                showToast(`Đã rút ${formatVND(amount)} về ví ${wallet.name}!`);
                 syncToGoogleSheets('ADD_TRANSACTION', { transaction: txObj });
+            } else {
+                const targetJarId = document.getElementById('drip-withdraw-jar').value;
+                const targetJar = state.jars.find(j => j.id === targetJarId);
+                if (!targetJar) {
+                    showToast('Vui lòng tạo ít nhất 1 Hũ mục tiêu trước!', 'error');
+                    return;
+                }
+                targetJar.current = (Number(targetJar.current) || 0) + amount;
+                const outTx = {
+                    id: `tx_drip_tojar_${Date.now()}`,
+                    date: dateVal,
+                    type: 'jar_withdraw',
+                    jarId: DRIP_JAR_ID,
+                    toJarId: targetJar.id,
+                    amount: amount,
+                    walletId: state.wallets[0]?.id || 'w_main',
+                    wallet: `Chuyển sang ${targetJar.name}`,
+                    note: `Chuyển từ Quỹ Nhỏ Giọt sang ${targetJar.name}`
+                };
+                state.transactions.unshift(outTx);
+                saveState();
+                closeDripWithdrawModal();
+                refreshAllViews();
+                showToast(`Đã chuyển ${formatVND(amount)} sang ${targetJar.name}!`);
+                syncToGoogleSheets('ADD_TRANSACTION', { transaction: outTx });
+                syncToGoogleSheets('SYNC_JARS', { jars: state.jars });
             }
         }
 
+        // ==================== RENDER TAB 2: HŨ MỤC TIÊU & VAY NỢ ====================
         function renderJarsTab() {
-            renderDripFundSection();
+            const selectedMonth = document.getElementById('month-filter').value;
+            renderDripJarSection(selectedMonth);
+
             const jarsGrid = document.getElementById('jars-grid');
+            if (!jarsGrid) return;
             if (state.jars.length === 0) {
                 jarsGrid.innerHTML = `<div class="col-span-full text-center py-8 text-xs text-slate-400">Chưa có hũ mục tiêu nào. Bấm "+ Tạo Hũ mới" để bắt đầu tích sản.</div>`;
             } else {
@@ -2308,7 +2612,7 @@
                     const pct = Math.min(Math.round((cur / tgt) * 100), 100);
                     const jarTxCount = state.transactions.filter(t =>
                         ((t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === jar.id) ||
-                        (t.type === 'jar_withdraw' && t.jarId === DRIP_JAR_ID && (t.toJarId === jar.id || String(t.note || '').trim() === `Chuyển từ Quỹ Nhỏ Giọt sang ${jar.name}`))
+                        (t.type === 'jar_withdraw' && t.jarId === DRIP_JAR_ID && (t.toJarId === jar.id || (t.note && String(t.note).includes(`Chuyển từ Quỹ Nhỏ Giọt sang ${jar.name}`))))
                     ).length;
                     return `
                         <div class="p-5 rounded-2xl border border-slate-200/80 bg-slate-50/60 flex flex-col justify-between space-y-3">
@@ -2346,6 +2650,7 @@
 
             const debtContainer = document.getElementById('debt-list-container');
             const summaryCard = document.getElementById('debt-summary-card');
+            if (!debtContainer) return;
             const debtTxs = state.transactions.filter(t => t.type === 'debt');
             const peopleMap = {};
 
@@ -2504,29 +2809,32 @@
 
         function openJarHistoryModal(jarId) {
             const isDrip = jarId === DRIP_JAR_ID;
-            const dripStats = isDrip ? calculateDripFundStats(document.getElementById('month-filter').value) : null;
             const jar = isDrip
-                ? { id: DRIP_JAR_ID, name: 'Quỹ Nhỏ Giọt — Điểm Danh Ngày', icon: '💧', target: 0, current: dripStats.balance }
+                ? { id: DRIP_JAR_ID, name: 'Quỹ Nhỏ Giọt (Điểm danh ngày)', icon: '💧', target: 0, current: calculateDripJarStats('').balance }
                 : state.jars.find(j => j.id === jarId);
             if (!jar) return;
             const safeIcon = (jar.icon && !/^\d+$/.test(String(jar.icon).trim())) ? jar.icon : '🛡️';
             const jarTxs = state.transactions.filter(t => {
-                if (isDrip) {
-                    return (t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === DRIP_JAR_ID;
+                if ((t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === jar.id) return true;
+                if (!isDrip && t.type === 'jar_withdraw' && t.jarId === DRIP_JAR_ID) {
+                    if (t.toJarId === jar.id) return true;
+                    if (t.note && String(t.note).includes(`Chuyển từ Quỹ Nhỏ Giọt sang ${jar.name}`)) return true;
                 }
-                const directMatch = (t.type === 'jar_deposit' || t.type === 'jar_withdraw') && t.jarId === jar.id;
-                const incomingFromDrip = t.type === 'jar_withdraw' && t.jarId === DRIP_JAR_ID && (
-                    t.toJarId === jar.id || (t.note && String(t.note).includes(jar.name))
-                );
-                return directMatch || incomingFromDrip;
+                return false;
             }).sort((a, b) => (b.date || '').localeCompare(a.date || ''));
 
-            const totalIn = jarTxs.filter(t => t.type === 'jar_deposit' || (t.type === 'jar_withdraw' && t.jarId === DRIP_JAR_ID && !isDrip)).reduce((s, t) => s + (Number(t.amount) || 0), 0);
-            const totalOut = jarTxs.filter(t => t.type === 'jar_withdraw' && (isDrip || t.jarId === jar.id)).reduce((s, t) => s + (Number(t.amount) || 0), 0);
+            let totalIn = 0;
+            let totalOut = 0;
+            jarTxs.forEach(t => {
+                const amt = Number(t.amount) || 0;
+                const isIncomingHere = t.type === 'jar_deposit' || (!isDrip && t.jarId === DRIP_JAR_ID);
+                if (isIncomingHere) totalIn += amt;
+                else totalOut += amt;
+            });
 
             document.getElementById('jar-hist-icon').textContent = safeIcon;
             document.getElementById('jar-hist-title').textContent = jar.name;
-            document.getElementById('jar-hist-target').textContent = isDrip ? 'Tích tiểu thành đại mỗi ngày' : `Mục tiêu: ${formatVND(jar.target)}`;
+            document.getElementById('jar-hist-target').textContent = isDrip ? 'Tích lũy kỷ luật hằng ngày' : `Mục tiêu: ${formatVND(jar.target)}`;
             document.getElementById('jar-hist-in').textContent = `+${formatVND(totalIn)}`;
             document.getElementById('jar-hist-out').textContent = `-${formatVND(totalOut)}`;
             document.getElementById('jar-hist-cur').textContent = formatVND(jar.current);
@@ -2536,11 +2844,11 @@
                 listEl.innerHTML = `<div class="py-10 text-center text-xs text-slate-400">Chưa có lịch sử nộp tiền hoặc rút tiền nào cho quỹ này.</div>`;
             } else {
                 listEl.innerHTML = jarTxs.map(tx => {
-                    const isIncomingTransferFromDrip = !isDrip && tx.type === 'jar_withdraw' && tx.jarId === DRIP_JAR_ID;
-                    const isDep = tx.type === 'jar_deposit' || isIncomingTransferFromDrip;
-                    const sourceLabel = isIncomingTransferFromDrip
-                        ? 'Từ Quỹ Nhỏ Giọt 💧'
-                        : `${isDep ? 'Từ ví:' : 'Về ví:'} ${tx.wallet || getWalletById(resolveWalletIdForTx(tx)).name}`;
+                    const isIncomingFromDrip = !isDrip && tx.jarId === DRIP_JAR_ID;
+                    const isDep = tx.type === 'jar_deposit' || isIncomingFromDrip;
+                    const wName = isIncomingFromDrip
+                        ? 'Quỹ Nhỏ Giọt 💧'
+                        : (tx.toJarId ? (state.jars.find(j => j.id === tx.toJarId)?.name || tx.wallet) : getWalletById(resolveWalletIdForTx(tx)).name);
                     return `
                         <div onclick="closeJarHistoryModal(); openDetailModal('${tx.id}')" class="p-3 rounded-2xl border border-slate-100 bg-slate-50/70 hover:bg-slate-100 flex items-center justify-between gap-3 cursor-pointer transition">
                             <div class="min-w-0">
@@ -2548,7 +2856,7 @@
                                     <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${isDep ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${isDep ? 'Nộp vào quỹ' : 'Rút từ quỹ'}</span>
                                     <span class="text-xs font-bold text-slate-800">${formatDateVN(tx.date, true)}</span>
                                 </div>
-                                <div class="text-[11px] text-slate-500 truncate mt-1">${sourceLabel}${tx.note ? ' • ' + tx.note : ''}</div>
+                                <div class="text-[11px] text-slate-500 truncate mt-1">${isDep ? 'Từ nguồn:' : 'Chuyển đến:'} ${wName}${tx.note ? ' • ' + tx.note : ''}</div>
                             </div>
                             <div class="font-heading font-extrabold text-xs sm:text-sm ${isDep ? 'text-emerald-600' : 'text-rose-600'} shrink-0">
                                 ${isDep ? '+' : '-'}${formatVND(tx.amount)}
@@ -2576,7 +2884,7 @@
             document.getElementById('jar-history-modal').classList.add('hidden');
         }
 
-        // ==================== RENDER TAB 3: BÁO CÁO LỊCH THÁNG & SỔ CHI TIẾT ====================
+        // ==================== RENDER TAB 3: BÁO CÁO LỊCH THÁNG, XU HƯỚNG 12 THÁNG & NHẬT KÝ ====================
         function renderMonthlyCalendar(selectedMonth) {
             const grid = document.getElementById('monthly-calendar-grid');
             if (!grid || !selectedMonth) return;
@@ -2633,6 +2941,110 @@
             }
 
             grid.innerHTML = html;
+        }
+
+        function renderTrend12MonthsChart(selectedMonth) {
+            const canvas = document.getElementById('trend12MonthsChart');
+            if (!canvas || !selectedMonth) return;
+
+            if (trend12ChartInstance) {
+                trend12ChartInstance.destroy();
+                trend12ChartInstance = null;
+            }
+
+            const [endY, endM] = selectedMonth.split('-').map(Number);
+            const labels = [];
+            const incSeries = [];
+            const expSeries = [];
+            const netSeries = [];
+
+            for (let i = 11; i >= 0; i--) {
+                const d = new Date(endY, endM - 1 - i, 1);
+                const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+                labels.push(`T${d.getMonth() + 1}/${String(d.getFullYear()).slice(-2)}`);
+
+                const mTxs = state.transactions.filter(t => normalizeDateStr(t.date).startsWith(ym));
+                const inc = mTxs.filter(t => t.type === 'income').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+                const exp = mTxs.filter(t => t.type === 'expense').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+                incSeries.push(inc);
+                expSeries.push(exp);
+                netSeries.push(inc - exp);
+            }
+
+            trend12ChartInstance = new Chart(canvas, {
+                type: 'bar',
+                data: {
+                    labels,
+                    datasets: [
+                        { label: 'Tổng Thu', data: incSeries, backgroundColor: '#10B981', borderRadius: 6 },
+                        { label: 'Tổng Chi', data: expSeries, backgroundColor: '#F43F5E', borderRadius: 6 },
+                        { label: 'Tích lũy ròng', data: netSeries, type: 'line', borderColor: '#4F46E5', backgroundColor: '#4F46E5', tension: 0.35, pointRadius: 4 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
+                    scales: {
+                        y: {
+                            ticks: {
+                                callback: (v) => formatCompactVND(v) || '0'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderQualityAndJournalSection(selectedMonth) {
+            const qualBox = document.getElementById('quality-spending-summary');
+            const hrsBadge = document.getElementById('monthly-work-hours-summary');
+            const journalTitle = document.getElementById('journal-month-title');
+            const journalInput = document.getElementById('monthly-journal-input');
+            if (!qualBox || !selectedMonth) return;
+
+            const monthExpenses = state.transactions.filter(t => t.type === 'expense' && normalizeDateStr(t.date).startsWith(selectedMonth));
+            const totalExp = monthExpenses.reduce((s, t) => s + (Number(t.amount) || 0), 0);
+            const worthSum = monthExpenses.filter(t => t.quality !== 'impulse').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+            const impulseSum = monthExpenses.filter(t => t.quality === 'impulse').reduce((s, t) => s + (Number(t.amount) || 0), 0);
+            const impulsePct = totalExp > 0 ? Math.round((impulseSum / totalExp) * 100) : 0;
+
+            if (state.hourlyWage > 0 && totalExp > 0) {
+                const totalHrs = (totalExp / state.hourlyWage).toFixed(1).replace('.', ',');
+                hrsBadge.textContent = `Tổng chi = ${totalHrs} giờ công`;
+            } else {
+                hrsBadge.textContent = state.hourlyWage > 0 ? '0 giờ công' : 'Chưa cài lương/giờ';
+            }
+
+            qualBox.innerHTML = `
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-semibold text-emerald-700">⭐ Khoản chi đáng tiền</span>
+                    <span class="font-bold text-slate-900">${formatVND(worthSum)}</span>
+                </div>
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-semibold text-amber-700">⚡ Khoản tiêu bốc đồng (${impulsePct}%)</span>
+                    <span class="font-bold text-amber-700">${formatVND(impulseSum)}</span>
+                </div>
+                <div class="w-full h-2.5 bg-emerald-100 rounded-full overflow-hidden flex">
+                    <div class="h-full bg-emerald-500" style="width:${100 - impulsePct}%"></div>
+                    <div class="h-full bg-amber-500" style="width:${impulsePct}%"></div>
+                </div>
+            `;
+
+            const [y, m] = selectedMonth.split('-');
+            if (journalTitle) journalTitle.textContent = `Nhật ký Tài chính & Bài học Tháng ${m}/${y}`;
+            if (journalInput && document.activeElement !== journalInput) {
+                journalInput.value = state.monthlyJournals[selectedMonth] || '';
+            }
+        }
+
+        function saveMonthlyJournal() {
+            const selectedMonth = document.getElementById('month-filter').value;
+            if (!selectedMonth) return;
+            state.monthlyJournals[selectedMonth] = document.getElementById('monthly-journal-input')?.value.trim() || '';
+            saveState();
+            syncAppConfigToSheets(false);
+            showToast('Đã lưu nhật ký tài chính tháng & đồng bộ Sheet!');
         }
 
         function openDayDetailModal(dateStr) {
@@ -2696,8 +3108,8 @@
             if (!container) return;
             const selectedMonth = document.getElementById('month-filter').value;
             renderMonthlyCalendar(selectedMonth);
-            render12MonthsTrendChart(selectedMonth);
-            renderSpendingQualityAndJournal(selectedMonth);
+            renderTrend12MonthsChart(selectedMonth);
+            renderQualityAndJournalSection(selectedMonth);
 
             const query = (document.getElementById('search-input')?.value || '').toLowerCase().trim();
             const catFilter = document.getElementById('category-filter')?.value || 'ALL';
@@ -2751,120 +3163,6 @@
             }).join('');
         }
 
-        function render12MonthsTrendChart(selectedMonth) {
-            const canvas = document.getElementById('trend12MonthsChart');
-            if (!canvas) return;
-            if (trend12ChartInstance) {
-                trend12ChartInstance.destroy();
-                trend12ChartInstance = null;
-            }
-
-            const baseYM = selectedMonth || getTodayStr().slice(0, 7);
-            const [baseY, baseM] = baseYM.split('-').map(Number);
-            const labels = [];
-            const incSeries = [];
-            const expSeries = [];
-            const netSeries = [];
-
-            for (let i = 11; i >= 0; i--) {
-                const d = new Date(baseY, baseM - 1 - i, 1);
-                const ym = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-                labels.push(`T${d.getMonth() + 1}/${String(d.getFullYear()).slice(-2)}`);
-
-                const mTxs = state.transactions.filter(t => normalizeDateStr(t.date).startsWith(ym));
-                const inc = mTxs.filter(t => t.type === 'income').reduce((s, t) => s + (Number(t.amount) || 0), 0);
-                const exp = mTxs.filter(t => t.type === 'expense').reduce((s, t) => s + (Number(t.amount) || 0), 0);
-                incSeries.push(inc);
-                expSeries.push(exp);
-                netSeries.push(inc - exp);
-            }
-
-            trend12ChartInstance = new Chart(canvas, {
-                type: 'bar',
-                data: {
-                    labels,
-                    datasets: [
-                        { label: 'Thu nhập', data: incSeries, backgroundColor: '#10B981', borderRadius: 6 },
-                        { label: 'Chi tiêu', data: expSeries, backgroundColor: '#F43F5E', borderRadius: 6 },
-                        { label: 'Tích lũy ròng', data: netSeries, type: 'line', borderColor: '#4F46E5', backgroundColor: '#4F46E5', tension: 0.35, borderWidth: 2.5, pointRadius: 3 }
-                    ]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } },
-                    scales: {
-                        y: {
-                            ticks: { callback: (val) => formatCompactVND(val) || '0' },
-                            grid: { color: 'rgba(226,232,240,0.5)' }
-                        },
-                        x: { grid: { display: false } }
-                    }
-                }
-            });
-        }
-
-        function renderSpendingQualityAndJournal(selectedMonth) {
-            const qualEl = document.getElementById('quality-spending-summary');
-            const workEl = document.getElementById('monthly-work-hours-summary');
-            const journalTitle = document.getElementById('journal-month-title');
-            const journalInput = document.getElementById('monthly-journal-input');
-            if (!qualEl || !selectedMonth) return;
-
-            const monthExpenses = state.transactions.filter(t => t.type === 'expense' && normalizeDateStr(t.date).startsWith(selectedMonth));
-            const totalExp = monthExpenses.reduce((s, t) => s + (Number(t.amount) || 0), 0);
-            const impulseExp = monthExpenses.filter(t => t.quality === 'impulse').reduce((s, t) => s + (Number(t.amount) || 0), 0);
-            const worthExp = Math.max(0, totalExp - impulseExp);
-            const impulsePct = totalExp > 0 ? Math.round((impulseExp / totalExp) * 100) : 0;
-
-            qualEl.innerHTML = `
-                <div class="p-3 rounded-2xl bg-emerald-50/70 border border-emerald-100 flex items-center justify-between">
-                    <span class="text-xs font-bold text-emerald-800">⭐ Đáng tiền / Thiết yếu</span>
-                    <span class="text-xs sm:text-sm font-heading font-extrabold text-emerald-700">${formatVND(worthExp)}</span>
-                </div>
-                <div class="p-3 rounded-2xl bg-amber-50/80 border border-amber-200/70 flex items-center justify-between">
-                    <span class="text-xs font-bold text-amber-800">⚡ Tiêu bốc đồng (${impulsePct}%)</span>
-                    <span class="text-xs sm:text-sm font-heading font-extrabold text-amber-700">${formatVND(impulseExp)}</span>
-                </div>
-            `;
-
-            if (workEl) {
-                if (state.hourlyWage > 0) {
-                    const hrs = (totalExp / state.hourlyWage).toFixed(1).replace('.', ',');
-                    const days = (totalExp / (state.hourlyWage * 8)).toFixed(1).replace('.', ',');
-                    workEl.textContent = `${hrs} giờ công (~${days} ngày làm việc)`;
-                } else {
-                    workEl.textContent = 'Chưa cài lương/giờ';
-                }
-            }
-
-            if (journalTitle && journalInput) {
-                const [y, m] = selectedMonth.split('-');
-                journalTitle.textContent = `Nhật ký Tài chính & Bài học Tháng ${m}/${y}`;
-                if (document.activeElement !== journalInput) {
-                    journalInput.value = state.monthlyJournals[selectedMonth] || '';
-                }
-            }
-        }
-
-        function saveMonthlyJournal() {
-            const selectedMonth = document.getElementById('month-filter').value;
-            if (!selectedMonth) return;
-            state.monthlyJournals[selectedMonth] = document.getElementById('monthly-journal-input').value.trim();
-            saveState();
-            showToast('Đã lưu Nhật ký tháng & đồng bộ Google Sheets!');
-            syncAppConfigToSheets(false);
-        }
-
-        function saveHourlyWageSetting() {
-            const val = parseCurrencyInput(document.getElementById('setting-hourly-wage').value);
-            state.hourlyWage = val;
-            saveState();
-            refreshAllViews();
-            showToast('Đã lưu mức thu nhập/giờ & đồng bộ Sheet!');
-            syncAppConfigToSheets(false);
-        }
-
         function getTransactionDisplayMeta(tx) {
             if (isWalletTransferTx(tx)) {
                 let fromName = tx.fromWalletId ? getWalletById(tx.fromWalletId).name : '';
@@ -2901,10 +3199,10 @@
                     icon: jar.icon || '🏦',
                     title: isDep ? `Nạp vào ${jar.name}` : `Rút từ ${jar.name}`,
                     groupLabel: isDrip ? 'Điểm danh tiết kiệm ngày' : 'Tích sản mục tiêu',
-                    amountColor: isDrip ? (isDep ? 'text-emerald-600' : 'text-rose-600') : 'text-indigo-600',
-                    sign: isDep ? '+' : '-',
-                    badgeText: isDep ? (isDrip ? 'Điểm danh quỹ' : 'Nạp hũ') : (isDrip ? 'Rút quỹ nhỏ giọt' : 'Rút hũ'),
-                    badgeCls: isDrip ? 'bg-emerald-100 text-emerald-700' : 'bg-indigo-100 text-indigo-700'
+                    amountColor: 'text-indigo-600',
+                    sign: isDep ? '→' : '←',
+                    badgeText: isDep ? 'Nạp quỹ' : 'Rút quỹ',
+                    badgeCls: 'bg-indigo-100 text-indigo-700'
                 };
             }
             if (tx.type === 'debt') {
@@ -2927,15 +3225,14 @@
             }
             const cat = getCategoryById(tx.categoryId, tx.categoryName, tx.categoryIcon);
             const isInc = tx.type === 'income';
-            const qualityTag = (!isInc && tx.quality === 'impulse') ? ' ⚡' : '';
             return {
                 icon: cat.icon || '📌',
-                title: cat.name + qualityTag,
+                title: cat.name,
                 groupLabel: cat.group || (isInc ? 'Thu nhập' : 'Chi tiêu'),
                 amountColor: isInc ? 'text-emerald-600' : 'text-rose-600',
                 sign: isInc ? '+' : '-',
-                badgeText: isInc ? 'Thu tiền' : (tx.quality === 'impulse' ? 'Chi bốc đồng ⚡' : 'Chi đáng tiền ⭐'),
-                badgeCls: isInc ? 'bg-emerald-100 text-emerald-700' : (tx.quality === 'impulse' ? 'bg-amber-100 text-amber-800' : 'bg-rose-100 text-rose-700')
+                badgeText: isInc ? 'Thu tiền' : 'Chi tiền',
+                badgeCls: isInc ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'
             };
         }
 
@@ -2944,14 +3241,20 @@
             const isTrf = isWalletTransferTx(tx);
             const walletLabel = isTrf ? meta.title : getWalletById(resolveWalletIdForTx(tx)).name;
             const mainTitle = tx.note ? tx.note : meta.title;
-            const subLine = tx.note ? `${meta.title} • ${walletLabel}` : walletLabel;
+            const impulseBadge = (tx.type === 'expense' && tx.quality === 'impulse')
+                ? `<span class="inline-block ml-1.5 px-1.5 py-0.5 rounded-md bg-amber-100 text-amber-800 text-[10px] font-bold">⚡ Bốc đồng</span>`
+                : '';
+            const workHrsBadge = (tx.type === 'expense' && state.hourlyWage > 0 && Number(tx.amount) > 0)
+                ? ` • ${(Number(tx.amount) / state.hourlyWage).toFixed(1).replace('.', ',')}h công`
+                : '';
+            const subLine = (tx.note ? `${meta.title} • ${walletLabel}` : walletLabel) + workHrsBadge;
 
             return `
                 <div onclick="openDetailModal('${tx.id}')" class="p-3 rounded-2xl bg-white border border-slate-100 hover:border-slate-300 flex items-center justify-between gap-3 cursor-pointer transition">
                     <div class="flex items-center gap-3 min-w-0">
                         <div class="w-10 h-10 rounded-xl ${isTrf ? 'bg-purple-50 text-purple-600 font-bold' : 'bg-slate-50'} border border-slate-100 flex items-center justify-center text-lg shrink-0">${meta.icon}</div>
                         <div class="min-w-0">
-                            <div class="font-bold text-xs sm:text-sm text-slate-900 truncate">${mainTitle}</div>
+                            <div class="font-bold text-xs sm:text-sm text-slate-900 truncate">${mainTitle}${impulseBadge}</div>
                             <div class="text-[11px] text-slate-500 truncate mt-0.5">${subLine} • ${formatDateVN(tx.date)}</div>
                         </div>
                     </div>
@@ -2974,7 +3277,10 @@
             badge.textContent = meta.badgeText;
             badge.className = `text-[10px] font-bold px-2 py-0.5 rounded-full ${meta.badgeCls}`;
             document.getElementById('detail-title').textContent = meta.title;
-            document.getElementById('detail-group').textContent = `Phân nhóm: ${meta.groupLabel}`;
+            const qualityText = tx.type === 'expense'
+                ? (tx.quality === 'impulse' ? ' • ⚡ Tiêu bốc đồng' : ' • ⭐ Đáng tiền')
+                : '';
+            document.getElementById('detail-group').textContent = `Phân nhóm: ${meta.groupLabel}${qualityText}`;
 
             const amtEl = document.getElementById('detail-amount');
             amtEl.textContent = `${meta.sign}${formatVND(tx.amount)}`;
@@ -3001,68 +3307,56 @@
             const idx = state.transactions.findIndex(t => t.id === txId);
             if (idx === -1) return;
             const tx = state.transactions[idx];
-            let jarsChanged = false;
+            let jarsModified = false;
 
             if (tx.type === 'jar_deposit' || tx.type === 'jar_withdraw') {
                 const jar = state.jars.find(j => j.id === tx.jarId);
                 if (jar) {
                     jar.current = Math.max(0, (Number(jar.current) || 0) + (tx.type === 'jar_deposit' ? -Number(tx.amount) : Number(tx.amount)));
-                    jarsChanged = true;
+                    jarsModified = true;
                 }
                 if (tx.type === 'jar_withdraw' && tx.jarId === DRIP_JAR_ID) {
-                    const targetJar = state.jars.find(j =>
-                        (tx.toJarId && j.id === tx.toJarId) ||
-                        (tx.note && String(tx.note).includes(`Chuyển từ Quỹ Nhỏ Giọt sang ${j.name}`))
-                    );
+                    const targetJar = state.jars.find(j => j.id === tx.toJarId || (tx.note && String(tx.note).includes(`Chuyển từ Quỹ Nhỏ Giọt sang ${j.name}`)));
                     if (targetJar) {
                         targetJar.current = Math.max(0, (Number(targetJar.current) || 0) - Number(tx.amount));
-                        jarsChanged = true;
-                        const pairedIdx = state.transactions.findIndex(other =>
-                            other.id !== tx.id &&
-                            other.type === 'jar_deposit' &&
-                            other.jarId === targetJar.id &&
-                            Number(other.amount) === Number(tx.amount) &&
-                            normalizeDateStr(other.date) === normalizeDateStr(tx.date)
-                        );
-                        if (pairedIdx !== -1) {
-                            const pairedId = state.transactions[pairedIdx].id;
-                            state.transactions.splice(pairedIdx, 1);
-                            syncToGoogleSheets('DELETE_TRANSACTION', { id: pairedId });
-                        }
+                        jarsModified = true;
                     }
                 }
             }
 
-            const newIdx = state.transactions.findIndex(t => t.id === txId);
-            if (newIdx !== -1) state.transactions.splice(newIdx, 1);
+            state.transactions.splice(idx, 1);
             saveState();
             closeDetailModal();
             refreshAllViews();
-            showToast('Đã xóa giao dịch & đồng bộ số dư quỹ!');
+            showToast('Đã xóa giao dịch!');
             syncToGoogleSheets('DELETE_TRANSACTION', { id: txId });
-            if (jarsChanged) {
+            if (jarsModified) {
                 syncToGoogleSheets('SYNC_JARS', { jars: state.jars });
             }
         }
 
         // ==================== MODAL THÊM / SỬA GIAO DỊCH ====================
         function setTxQuality(q) {
-            state.currentTxQuality = q;
+            state.currentTxQuality = q === 'impulse' ? 'impulse' : 'worth';
             const worthBtn = document.getElementById('quality-btn-worth');
             const impBtn = document.getElementById('quality-btn-impulse');
             if (worthBtn && impBtn) {
-                worthBtn.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition ${q === 'worth' ? 'bg-emerald-600 text-white' : 'bg-white text-slate-600 border border-slate-200'}`;
-                impBtn.className = `px-3 py-1.5 rounded-xl text-xs font-bold transition ${q === 'impulse' ? 'bg-amber-500 text-white' : 'bg-white text-slate-600 border border-slate-200'}`;
+                worthBtn.className = state.currentTxQuality === 'worth'
+                    ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 text-white transition'
+                    : 'px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 transition';
+                impBtn.className = state.currentTxQuality === 'impulse'
+                    ? 'px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 text-white transition'
+                    : 'px-3 py-1.5 rounded-xl text-xs font-bold bg-white text-slate-600 border border-slate-200 transition';
             }
         }
 
         function updateWorkHoursHint() {
             const hintEl = document.getElementById('tx-work-hours-hint');
             if (!hintEl) return;
-            const amt = parseCurrencyInput(document.getElementById('tx-amount-display').value);
-            if (state.hourlyWage > 0 && amt > 0 && state.currentTxType === 'expense') {
+            const amt = parseCurrencyInput(document.getElementById('tx-amount-display')?.value);
+            if (state.currentTxType === 'expense' && state.hourlyWage > 0 && amt > 0) {
                 const hrs = (amt / state.hourlyWage).toFixed(1).replace('.', ',');
-                hintEl.textContent = `≈ ${hrs} giờ công`;
+                hintEl.textContent = `≈ ${hrs} giờ công lao động`;
             } else {
                 hintEl.textContent = '';
             }
@@ -3076,9 +3370,9 @@
             document.getElementById('tx-note').value = '';
             document.getElementById('tx-person-name').value = '';
             setTxQuality('worth');
-            updateWorkHoursHint();
             populateWalletSelects();
             setTxType(defaultType);
+            updateWorkHoursHint();
             document.getElementById('tx-modal').classList.remove('hidden');
         }
 
@@ -3091,9 +3385,8 @@
             document.getElementById('tx-modal-title').textContent = 'Chỉnh sửa giao dịch';
             document.getElementById('tx-amount-display').value = Number(tx.amount).toLocaleString('vi-VN');
             document.getElementById('tx-date').value = normalizeDateStr(tx.date);
-            document.getElementById('tx-note').value = tx.note || '';
-            setTxQuality(tx.quality || 'worth');
-            updateWorkHoursHint();
+            document.getElementById('tx-note').value = stripQualityTagFromNote(tx.note);
+            setTxQuality(extractQualityFromNote(tx.note, tx.quality));
 
             if (isWalletTransferTx(tx)) {
                 setTxType('transfer');
@@ -3111,6 +3404,7 @@
                 document.getElementById('tx-wallet').value = resolveWalletIdForTx(tx);
             }
 
+            updateWorkHoursHint();
             document.getElementById('tx-modal').classList.remove('hidden');
         }
 
@@ -3131,8 +3425,8 @@
                 }
             });
 
-            document.getElementById('tx-category-section').classList.toggle('hidden', type !== 'expense' && type !== 'income');
             document.getElementById('tx-quality-section').classList.toggle('hidden', type !== 'expense');
+            document.getElementById('tx-category-section').classList.toggle('hidden', type !== 'expense' && type !== 'income');
             document.getElementById('tx-transfer-section').classList.toggle('hidden', type !== 'transfer');
             document.getElementById('tx-debt-section').classList.toggle('hidden', type !== 'debt');
             document.getElementById('tx-single-wallet-wrap').classList.toggle('hidden', type === 'transfer');
@@ -3253,7 +3547,6 @@
             renderCategorySelector();
         }
 
-        // ==================== CHỌN ICON CÓ SẴN + TỰ NHẬP EMOJI BẤT KỲ ====================
         function renderIconPickerGrid(containerId, hiddenInputId, selectedIcon, customTextInputId = '') {
             const box = document.getElementById(containerId);
             const input = document.getElementById(hiddenInputId);
@@ -3399,13 +3692,13 @@
 
             const editingId = document.getElementById('editing-tx-id').value;
             const dateVal = normalizeDateStr(document.getElementById('tx-date').value) || getTodayStr();
-            const noteVal = document.getElementById('tx-note').value.trim();
+            const cleanNoteVal = stripQualityTagFromNote(document.getElementById('tx-note').value);
 
             const txObj = {
                 id: editingId || `tx_${Date.now()}`,
                 date: dateVal,
                 amount: amount,
-                note: noteVal
+                note: cleanNoteVal
             };
 
             if (state.currentTxType === 'transfer' || state.currentTxType === 'wallet_transfer') {
@@ -3438,20 +3731,27 @@
                 txObj.categoryId = cat.id;
                 txObj.categoryName = cat.name;
                 txObj.categoryIcon = cat.icon;
-                if (state.currentTxType === 'expense') txObj.quality = state.currentTxQuality || 'worth';
                 txObj.walletId = wId;
                 txObj.wallet = wObj.name;
+                if (state.currentTxType === 'expense') {
+                    txObj.quality = state.currentTxQuality || 'worth';
+                }
             }
+
+            const sheetTxPayload = {
+                ...txObj,
+                note: encodeNoteWithQuality(txObj.note, txObj.quality)
+            };
 
             if (editingId) {
                 const idx = state.transactions.findIndex(t => t.id === editingId);
                 if (idx !== -1) state.transactions[idx] = { ...state.transactions[idx], ...txObj };
-                showToast('Đã cập nhật giao dịch!');
-                syncToGoogleSheets('UPDATE_TRANSACTION', { transaction: txObj });
+                showToast('Đã cập nhật giao dịch & đồng bộ Sheet!');
+                syncToGoogleSheets('UPDATE_TRANSACTION', { transaction: sheetTxPayload });
             } else {
                 state.transactions.unshift(txObj);
-                showToast('Đã lưu giao dịch mới!');
-                syncToGoogleSheets('ADD_TRANSACTION', { transaction: txObj });
+                showToast('Đã lưu giao dịch mới & đồng bộ Sheet!');
+                syncToGoogleSheets('ADD_TRANSACTION', { transaction: sheetTxPayload });
             }
 
             saveState();
@@ -3482,7 +3782,7 @@
             const prev = el.value;
             let html = `<option value="ALL">Tất cả loại & hạng mục</option>`;
             html += `<option value="WALLET_TRANSFER">⇄ Chuyển tiền giữa ví</option>`;
-            html += `<option value="JAR_TRANSFER">🏦 Nạp / Rút Hũ mục tiêu</option>`;
+            html += `<option value="JAR_TRANSFER">🏦 Nạp / Rút Hũ & Quỹ nhỏ giọt</option>`;
             html += `<option value="DEBT_ALL">🤝 Vay / Cho vay</option>`;
             state.categories.forEach(c => {
                 html += `<option value="${c.id}">${c.icon} ${c.name}</option>`;
@@ -3681,6 +3981,7 @@
         // ==================== RENDER TAB 4 & TAB 5 (CÀI ĐẶT & HẠNG MỤC) ====================
         function renderSheetViewTab() {
             const container = document.getElementById('sheet-table-container');
+            if (!container) return;
             document.getElementById('sheet-range-subtitle').textContent = `Vùng đọc: ${state.sheetConfig.range || 'Tổng Quan Danh Mục!A1:I15'}`;
             if (!state.sheetRows || state.sheetRows.length === 0) {
                 container.innerHTML = `<div class="text-center py-10 text-xs text-slate-400">Chưa có dữ liệu từ bảng Google Sheets. Hãy kiểm tra kết nối ở tab Cài đặt và bấm "Tải lại dữ liệu Sheet".</div>`;
@@ -3702,11 +4003,15 @@
         }
 
         function renderSettingsTab() {
-            document.getElementById('setting-webhook-url').value = state.sheetConfig.webhookUrl || DEFAULT_WEBHOOK_URL;
+            const urlInp = document.getElementById('setting-webhook-url');
+            if (!urlInp) return;
+            urlInp.value = state.sheetConfig.webhookUrl || DEFAULT_WEBHOOK_URL;
             document.getElementById('setting-webhook-token').value = state.sheetConfig.token || '';
             document.getElementById('setting-sheet-range').value = state.sheetConfig.range || 'Tổng Quan Danh Mục!A1:I15';
-            const wageInput = document.getElementById('setting-hourly-wage');
-            if (wageInput) wageInput.value = state.hourlyWage > 0 ? Number(state.hourlyWage).toLocaleString('vi-VN') : '';
+            const wageInp = document.getElementById('setting-hourly-wage');
+            if (wageInp && document.activeElement !== wageInp) {
+                wageInp.value = state.hourlyWage > 0 ? Number(state.hourlyWage).toLocaleString('vi-VN') : '';
+            }
             updateConnectionStatusUI();
             updateNewCatParentOptions();
 
@@ -3908,14 +4213,20 @@
                 if (data.appConfig.hourlyWage !== undefined) {
                     state.hourlyWage = Number(data.appConfig.hourlyWage) || 0;
                 }
+                if (data.appConfig.dripBankConfig && typeof data.appConfig.dripBankConfig === 'object') {
+                    state.dripBankConfig = { ...state.dripBankConfig, ...data.appConfig.dripBankConfig };
+                }
             }
 
             if (Array.isArray(data.transactions) && data.transactions.length > 0) {
                 state.transactions = data.transactions.map(t => {
+                    const detectedQuality = extractQualityFromNote(t.note, t.quality);
                     const normalized = {
                         ...t,
                         type: t.type === 'transfer' ? 'wallet_transfer' : t.type,
-                        date: normalizeDateStr(t.date)
+                        date: normalizeDateStr(t.date),
+                        quality: detectedQuality,
+                        note: stripQualityTagFromNote(t.note)
                     };
                     if (normalized.type === 'debt' && normalized.personName && String(normalized.personName).includes('::')) {
                         const parts = String(normalized.personName).split('::');
@@ -4030,7 +4341,8 @@
                     wallets: state.wallets,
                     categories: state.categories,
                     monthlyJournals: state.monthlyJournals,
-                    hourlyWage: state.hourlyWage
+                    hourlyWage: state.hourlyWage,
+                    dripBankConfig: state.dripBankConfig
                 }
             });
             if (notify) showToast('Đã đẩy danh sách Ví, Hạng mục & Nhật ký lên Google Sheets!');
@@ -4041,14 +4353,19 @@
                 showToast('Chưa gắn link Google Apps Script trong Cài đặt!', 'error');
                 return;
             }
+            const txsForSheet = state.transactions.map(tx => ({
+                ...tx,
+                note: encodeNoteWithQuality(tx.note, tx.quality)
+            }));
             await syncToGoogleSheets('SYNC_ALL', {
-                transactions: state.transactions,
+                transactions: txsForSheet,
                 jars: state.jars,
                 appConfig: {
                     wallets: state.wallets,
                     categories: state.categories,
                     monthlyJournals: state.monthlyJournals,
-                    hourlyWage: state.hourlyWage
+                    hourlyWage: state.hourlyWage,
+                    dripBankConfig: state.dripBankConfig
                 }
             });
             showToast('Đã đẩy toàn bộ giao dịch, hũ và cấu hình lên Google Sheets!');
